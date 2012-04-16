@@ -74,7 +74,7 @@
 //    [inv getReturnValue:buffer];
 //    NSLog(@"ret = %c", *(unichar*)buffer);
     
-    LuaState *l = [[LuaState alloc] init];
+    LuaState *l = [LuaState instance];
 	return self;
 }
 

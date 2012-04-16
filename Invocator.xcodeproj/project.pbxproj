@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		9C250FE1153C3E9300EAFF3F /* bootstrap.lua in Resources */ = {isa = PBXBuildFile; fileRef = 9C250FE0153C3E9300EAFF3F /* bootstrap.lua */; };
 		9CD8788815371123005B6315 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9CD8788715371123005B6315 /* QuartzCore.framework */; };
 		9CD8788A15371123005B6315 /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9CD8788915371123005B6315 /* OpenGLES.framework */; };
 		9CD8788C15371123005B6315 /* OpenAL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9CD8788B15371123005B6315 /* OpenAL.framework */; };
@@ -158,6 +159,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		9C250FE0153C3E9300EAFF3F /* bootstrap.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = bootstrap.lua; sourceTree = "<group>"; };
 		9CD8788315371123005B6315 /* Invocator.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Invocator.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9CD8788715371123005B6315 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		9CD8788915371123005B6315 /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
@@ -472,6 +474,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		9C250FDF153C3E6B00EAFF3F /* Scripts */ = {
+			isa = PBXGroup;
+			children = (
+				9C250FE0153C3E9300EAFF3F /* bootstrap.lua */,
+			);
+			name = Scripts;
+			sourceTree = "<group>";
+		};
 		9CD8787815371123005B6315 = {
 			isa = PBXGroup;
 			children = (
@@ -507,6 +517,7 @@
 		9CD8789715371123005B6315 /* Invocator */ = {
 			isa = PBXGroup;
 			children = (
+				9C250FDF153C3E6B00EAFF3F /* Scripts */,
 				9CD879FC15379DB8005B6315 /* Lua */,
 				9CD879E915371125005B6315 /* AppDelegate.h */,
 				9CD879EA15371125005B6315 /* AppDelegate.m */,
@@ -975,6 +986,7 @@
 				9CD878A615371123005B6315 /* Icon.png in Resources */,
 				9CD878A815371123005B6315 /* Icon@2x.png in Resources */,
 				9CD878AB15371123005B6315 /* iTunesArtwork in Resources */,
+				9C250FE1153C3E9300EAFF3F /* bootstrap.lua in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1167,6 +1179,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = Invocator/Prefix.pch;
 				"GCC_THUMB_SUPPORT[arch=armv6]" = "";
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				INFOPLIST_FILE = Invocator/Resources/Info.plist;
 				OTHER_LDFLAGS = "-lz";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1182,6 +1195,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = Invocator/Prefix.pch;
 				"GCC_THUMB_SUPPORT[arch=armv6]" = "";
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				INFOPLIST_FILE = Invocator/Resources/Info.plist;
 				OTHER_LDFLAGS = "-lz";
 				PRODUCT_NAME = "$(TARGET_NAME)";

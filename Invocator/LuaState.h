@@ -13,4 +13,8 @@
 {
     lua_State *L;
 }
+
++ (LuaState*)instance;
+- (void)operate:(NSString*)opname onStack:(NSMutableArray*)stack;
+- (void)op_call:(NSMutableArray*)stack;
 @end
