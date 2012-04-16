@@ -17,6 +17,7 @@ int luafunc_hoge (lua_State *L);
 
 int luafunc_newstack(lua_State *L);
 int luafunc_push(lua_State *L);
+int luafunc_pop(lua_State *L);
 int luafunc_operate(lua_State *L);
 int luafunc_getclass(lua_State *L);
 
@@ -29,6 +30,7 @@ int luafunc_getclass(lua_State *L);
         lua_register(L, "hoge", luafunc_hoge);
         lua_register(L, "newstack", luafunc_newstack);
         lua_register(L, "push", luafunc_push);
+        lua_register(L, "pop", luafunc_pop);
         lua_register(L, "operate", luafunc_operate);
         lua_register(L, "getclass", luafunc_getclass);
         
@@ -359,6 +361,23 @@ int luafunc_operate(lua_State *L)
     return 0;
 }
 
+int luafunc_pop(lua_State *L)
+{
+    NSMutableArray *arr = (NSMutableArray*)lua_topointer(L, 1);
+    id obj = [arr lastObject];
+    [arr removeLastObject];
+    
+    if ([obj isKindOfClass:[NSString class]]) {
+        lua_pushstring(L, [obj cStringUsingEncoding:NSUTF8StringEncoding]);
+    } else if ([obj isKindOfClass:[NSNumber class]]) {
+        lua_pushnumber(L, [obj doubleValue]);
+    } else if ([obj isKindOfClass:[NSNull class]]) {
+        lua_pushnil(L);
+    } else {
+        lua_pushlightuserdata(L, [obj retain]);
+    }
+    return 1;
+}
 
 int luafunc_hoge (lua_State *L)
 {

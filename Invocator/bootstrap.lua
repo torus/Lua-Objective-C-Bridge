@@ -5,3 +5,6 @@ push(stack, 12345)
 push(stack, cls)
 push(stack, "numberWithInt:")
 operate(stack, "call")
+
+local res = pop(stack)
+print("res =", res)
