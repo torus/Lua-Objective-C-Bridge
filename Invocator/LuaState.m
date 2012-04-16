@@ -188,6 +188,110 @@ int luafunc_getclass(lua_State *L);
     void *buffer = malloc(len);
     [inv getReturnValue:buffer];
     NSLog(@"ret = %c", *(unichar*)buffer);
+#define CNVBUF(type) type x = *(type*)buffer
+    
+    switch (rettype[0]) {
+        case 'c': // A char
+        {
+            CNVBUF(char);
+            [stack addObject:[NSNumber numberWithChar:x]];
+        }
+            break;
+        case 'i': // An int
+        {
+            CNVBUF(int);
+            [stack addObject:[NSNumber numberWithInt:x]];
+        }
+            break;
+        case 's': // A short
+        {
+            CNVBUF(short);
+            [stack addObject:[NSNumber numberWithShort:x]];
+        }
+            break;
+        case 'l': // A long l is treated as a 32-bit quantity on 64-bit programs.
+        {
+            CNVBUF(long);
+            [stack addObject:[NSNumber numberWithLong:x]];
+        }
+            break;
+        case 'q': // A long long
+        {
+            CNVBUF(long long);
+            [stack addObject:[NSNumber numberWithLong:x]];
+        }
+            break;
+        case 'C': // An unsigned char
+        {
+            CNVBUF(unsigned char);
+            [stack addObject:[NSNumber numberWithUnsignedChar:x]];
+        }
+            break;
+        case 'I': // An unsigned int
+        {
+            CNVBUF(unsigned int);
+            [stack addObject:[NSNumber numberWithUnsignedInt:x]];
+        }
+            break;
+        case 'S': // An unsigned short
+        {
+            CNVBUF(unsigned short);
+            [stack addObject:[NSNumber numberWithUnsignedShort:x]];
+        }
+            break;
+        case 'L': // An unsigned long
+        {
+            CNVBUF(unsigned long);
+            [stack addObject:[NSNumber numberWithUnsignedLong:x]];
+        }
+            break;
+        case 'Q': // An unsigned long long
+        {
+            CNVBUF(unsigned long long);
+            [stack addObject:[NSNumber numberWithUnsignedLongLong:x]];
+        }
+            break;
+        case 'f': // A float
+        {
+            CNVBUF(float);
+            [stack addObject:[NSNumber numberWithFloat:x]];
+        }
+            break;
+        case 'd': // A double
+        {
+            CNVBUF(double);
+            [stack addObject:[NSNumber numberWithDouble:x]];
+        }
+            break;
+        case 'B': // A C++ bool or a C99 _Bool
+        {
+            CNVBUF(int);
+            [stack addObject:[NSNumber numberWithBool:x]];
+        }
+            break;
+            
+        case '*': // A character string (char *)
+        {
+            NSString *x = [NSString stringWithCString:buffer encoding:NSUTF8StringEncoding];
+            [stack addObject:x];
+        }
+            break;
+        case '@': // An object (whether statically typed or typed id)
+        {
+            id x = *(id*)buffer;
+            [stack addObject:x];
+        }
+            break;
+            
+        case 'v': // A void
+        case '#': // A class object (Class)
+        case ':': // A method selector (SEL)
+        default:
+            NSLog(@"%s: Not implemented", rettype);
+            break;
+    }
+#undef CNVBUF
+    
     free(buffer);
 }
 
