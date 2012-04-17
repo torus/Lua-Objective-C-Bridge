@@ -1,10 +1,10 @@
-hoge()
-local stack = newstack()
-local cls = getclass "NSNumber"
-push(stack, 12345)
-push(stack, cls)
-push(stack, "numberWithInt:")
-operate(stack, "call")
+objc.hoge()
+local stack = objc.newstack()
+local cls = objc.getclass "NSNumber"
+objc.push(stack, 12345)
+objc.push(stack, cls)
+objc.push(stack, "numberWithInt:")
+objc.operate(stack, "call")
 
-local res = pop(stack)
+local res = objc.pop(stack)
 print("res =", res)

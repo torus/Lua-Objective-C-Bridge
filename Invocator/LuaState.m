@@ -27,13 +27,22 @@ int luafunc_getclass(lua_State *L);
     if (self) {
         L = luaL_newstate();
         luaL_openlibs(L);
-        lua_register(L, "hoge", luafunc_hoge);
-        lua_register(L, "newstack", luafunc_newstack);
-        lua_register(L, "push", luafunc_push);
-        lua_register(L, "pop", luafunc_pop);
-        lua_register(L, "operate", luafunc_operate);
-        lua_register(L, "getclass", luafunc_getclass);
+        lua_newtable(L);
+
+#define ADDMETHOD(name) \
+    (lua_pushstring(L, #name), \
+     lua_pushcfunction(L, luafunc_ ## name), \
+     lua_settable(L, -3))
         
+        ADDMETHOD(hoge);
+        ADDMETHOD(newstack);
+        ADDMETHOD(push);
+        ADDMETHOD(pop);
+        ADDMETHOD(operate);
+        ADDMETHOD(getclass);
+
+        lua_setglobal(L, "objc");
+#undef ADDMETHOD        
         NSString *path = [NSString stringWithFormat:@"%@/bootstrap.lua", [[NSBundle mainBundle] bundlePath]];
         int err = luaL_dofile(L, [path cStringUsingEncoding:NSUTF8StringEncoding]);
         if (err) {
