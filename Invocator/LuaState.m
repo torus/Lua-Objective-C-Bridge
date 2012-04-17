@@ -6,12 +6,16 @@
 //  Copyright (c) 2012年 Kronecker's Delta Studio. All rights reserved.
 //
 
+#import <UIKit/UIKit.h>
+
 #import <objc/objc-runtime.h>
 
 #import "LuaState.h"
 
 #import "lualib.h"
 #import "lauxlib.h"
+
+#import "cocos2d.h"
 
 int luafunc_hoge (lua_State *L);
 
@@ -81,6 +85,7 @@ int luafunc_getclass(lua_State *L);
     SEL sel = sel_getUid([message cStringUsingEncoding:NSUTF8StringEncoding]);
     NSMethodSignature *sig = [target methodSignatureForSelector:sel];
     NSInvocation *inv = [NSInvocation invocationWithMethodSignature:sig];
+    [inv retainArguments];
     NSUInteger numarg = [sig numberOfArguments];
     NSLog(@"Number of arguments = %d", numarg);
     
@@ -304,6 +309,19 @@ int luafunc_getclass(lua_State *L);
 #undef CNVBUF
     
     free(buffer);
+}
+
+- (void)op_sprite_setpos:(NSMutableArray *)stack
+{
+    CGFloat y = [(NSNumber*)[stack lastObject] floatValue];
+    [stack removeLastObject];
+    CGFloat x = [(NSNumber*)[stack lastObject] floatValue];
+    [stack removeLastObject];
+    CCSprite *sp = (CCSprite*)[[stack lastObject] retain];
+    [stack removeLastObject];
+    
+    sp.position = ccp(x, y);
+    [sp release];
 }
 
 @end

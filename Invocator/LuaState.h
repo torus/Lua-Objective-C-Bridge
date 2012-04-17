@@ -17,4 +17,5 @@
 + (LuaState*)instance;
 - (void)operate:(NSString*)opname onStack:(NSMutableArray*)stack;
 - (void)op_call:(NSMutableArray*)stack;
+- (void)op_sprite_setpos:(NSMutableArray*)stack;
 @end
