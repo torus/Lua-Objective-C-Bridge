@@ -1,6 +1,6 @@
 //
 //  LuaState.m
-//  Invocator
+//  Lua-Objective-C Bridge
 //
 //  Created by Toru Hisai on 12/04/13.
 //  Copyright (c) 2012年 Kronecker's Delta Studio. All rights reserved.
@@ -8,24 +8,41 @@
 
 #import <UIKit/UIKit.h>
 
-#import <objc/objc-runtime.h>
+#import <objc/runtime.h>
 
 #import "LuaState.h"
+#import "PointerObject.h"
 
 #import "lualib.h"
 #import "lauxlib.h"
-
-#import "cocos2d.h"
 
 int luafunc_hoge (lua_State *L);
 
 int luafunc_newstack(lua_State *L);
 int luafunc_push(lua_State *L);
 int luafunc_pop(lua_State *L);
+int luafunc_clear(lua_State *L);
 int luafunc_operate(lua_State *L);
 int luafunc_getclass(lua_State *L);
 
-@implementation LuaState
+static int gc_metatable_ref;
+
+int finalize_object(lua_State *L)
+{
+    void *p = lua_touserdata(L, 1);
+    void **ptr = (void**)p;
+    id obj = (id)*ptr;
+    
+//    NSLog(@"%s: releasing %@ retainCount = %d", __PRETTY_FUNCTION__, obj, [obj retainCount]);
+
+    [obj release];
+
+    return 0;
+}
+
+@implementation LuaBridge
+@synthesize L;
+
 - (id)init {
     self = [super init];
     if (self) {
@@ -42,44 +59,83 @@ int luafunc_getclass(lua_State *L);
         ADDMETHOD(newstack);
         ADDMETHOD(push);
         ADDMETHOD(pop);
+        ADDMETHOD(clear);
         ADDMETHOD(operate);
         ADDMETHOD(getclass);
 
         lua_setglobal(L, "objc");
 #undef ADDMETHOD        
-        NSString *path = [NSString stringWithFormat:@"%@/bootstrap.lua", [[NSBundle mainBundle] bundlePath]];
-        int err = luaL_dofile(L, [path cStringUsingEncoding:NSUTF8StringEncoding]);
-        if (err) {
-            NSLog(@"Lua Error: %s", lua_tostring(L, -1));
-            lua_pop(L, 1);
-        }
     }
     return self;
 }
 
-+ (LuaState*)instance
++ (LuaBridge*)instance
 {
-    static LuaState *stat = nil;
+    static LuaBridge *stat = nil;
     if (!stat) {
-        stat = [LuaState alloc];
+        stat = [LuaBridge alloc];
         [stat init];
+        
+        lua_State *L = stat.L;
+        
+        lua_newtable(L);
+        lua_pushstring(L, "__gc");
+        lua_pushcfunction(L, finalize_object);
+        lua_settable(L, -3);
+        gc_metatable_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+        
+        NSLog(@"%s: metatable_ref = %d", __PRETTY_FUNCTION__, gc_metatable_ref);
+        
     }
     return stat;
 }
 
+- (void)dostring:(NSString*)stmt
+{
+    if (luaL_dostring(L, [stmt cStringUsingEncoding:NSUTF8StringEncoding])) {
+        NSLog(@"Lua Error: %s", lua_tostring(L, -1));
+        lua_pop(L, 1);
+    }
+}
+
+static NSUncaughtExceptionHandler * orig_exception_handler = NULL;
+static NSString *exception_handler_opname = NULL;
+static NSMutableArray *exception_handler_stack = NULL;
+
+static void lua_exception_handler(NSException *exception)
+{
+    NSLog(@"Lua exception: opname = %@: stack = %@", exception_handler_opname, exception_handler_stack);
+    if (orig_exception_handler) {
+        orig_exception_handler(exception);
+    }
+}
+
 - (void)operate:(NSString*)opname onStack:(NSMutableArray*)stack
 {
-    NSString *method = [NSString stringWithFormat:@"op_%s:", lua_tostring(L, -1)];
+    orig_exception_handler = NSGetUncaughtExceptionHandler();
+    exception_handler_stack = [stack retain];
+    exception_handler_opname = [opname retain];
+
+    NSSetUncaughtExceptionHandler(lua_exception_handler);
+    
+    NSString *method = [NSString stringWithFormat:@"op_%@:", opname];
     
     SEL sel = sel_getUid([method cStringUsingEncoding:NSUTF8StringEncoding]);
     [self performSelector:sel withObject:stack];
+    
+    NSSetUncaughtExceptionHandler(orig_exception_handler);
+    orig_exception_handler = NULL;
+    exception_handler_stack = NULL;
+    exception_handler_opname = NULL;
+    [stack release];
+    [opname release];
 }
 
 - (void)op_call:(NSMutableArray*)stack
 {
-    NSString *message = (NSString*)[[stack lastObject] retain];
+    NSString *message = [(NSString*)[[stack lastObject] retain] autorelease];
     [stack removeLastObject];
-    id target = [[stack lastObject] retain];
+    id target = [[[stack lastObject] retain] autorelease];
     [stack removeLastObject];
     
     SEL sel = sel_getUid([message cStringUsingEncoding:NSUTF8StringEncoding]);
@@ -87,12 +143,12 @@ int luafunc_getclass(lua_State *L);
     NSInvocation *inv = [NSInvocation invocationWithMethodSignature:sig];
     [inv retainArguments];
     NSUInteger numarg = [sig numberOfArguments];
-    NSLog(@"Number of arguments = %d", numarg);
+//    NSLog(@"Number of arguments = %d", numarg);
     
     for (int i = 2; i < numarg; i++) {
         const char *t = [sig getArgumentTypeAtIndex:i];
-        NSLog(@"arg %d: %s", i, t);
-        id arg = [stack lastObject];
+//        NSLog(@"arg %d: %s", i, t);
+        id arg = [[[stack lastObject] retain] autorelease];
         [stack removeLastObject];
         
         switch (t[0]) {
@@ -185,6 +241,10 @@ int luafunc_getclass(lua_State *L);
                 [inv setArgument:&arg atIndex:i];
                 break;
 
+            case '^': // pointer
+                [inv setArgument:&arg atIndex:i];
+                break;
+
             case 'v': // A void
             case '#': // A class object (Class)
             case ':': // A method selector (SEL)
@@ -198,12 +258,15 @@ int luafunc_getclass(lua_State *L);
     [inv setSelector:sel];
     [inv invoke];
     
-    NSUInteger len = [[inv methodSignature] methodReturnLength];
     const char *rettype = [sig methodReturnType];
-    NSLog(@"ret type = %s", rettype);
-    void *buffer = malloc(len);
-    [inv getReturnValue:buffer];
-    NSLog(@"ret = %c", *(unichar*)buffer);
+//    NSLog(@"[%@ %@] ret type = %s", target, message, rettype);
+    void *buffer = NULL;
+    if (rettype[0] != 'v') { // don't get return value from void function
+        NSUInteger len = [[inv methodSignature] methodReturnLength];
+        buffer = malloc(len);
+        [inv getReturnValue:buffer];
+//        NSLog(@"ret = %c", *(unichar*)buffer);
+    }
 #define CNVBUF(type) type x = *(type*)buffer
     
     switch (rettype[0]) {
@@ -299,7 +362,14 @@ int luafunc_getclass(lua_State *L);
         }
             break;
             
+        case '^':
+        {
+            void *x = *(void**)buffer;
+            [stack addObject:[PointerObject pointerWithVoidPtr:x]];
+        }
+            break;
         case 'v': // A void
+            break;
         case '#': // A class object (Class)
         case ':': // A method selector (SEL)
         default:
@@ -309,19 +379,6 @@ int luafunc_getclass(lua_State *L);
 #undef CNVBUF
     
     free(buffer);
-}
-
-- (void)op_sprite_setpos:(NSMutableArray *)stack
-{
-    CGFloat y = [(NSNumber*)[stack lastObject] floatValue];
-    [stack removeLastObject];
-    CGFloat x = [(NSNumber*)[stack lastObject] floatValue];
-    [stack removeLastObject];
-    CCSprite *sp = (CCSprite*)[[stack lastObject] retain];
-    [stack removeLastObject];
-    
-    sp.position = ccp(x, y);
-    [sp release];
 }
 
 @end
@@ -363,10 +420,15 @@ int luafunc_push(lua_State *L)
             case LUA_TLIGHTUSERDATA:
                 [arr addObject:(id)lua_topointer(L, i)];
                 break;
-                
+            case LUA_TUSERDATA:
+            {
+                void *p = lua_touserdata(L, i);
+                void **ptr = (void**)p;
+                [arr addObject:(id)*ptr];
+            }
+                break;                
             case LUA_TTABLE:
             case LUA_TFUNCTION:
-            case LUA_TUSERDATA:
             case LUA_TTHREAD:
             case LUA_TNONE:
             default:
@@ -384,14 +446,14 @@ int luafunc_operate(lua_State *L)
     NSMutableArray *arr = (NSMutableArray*)lua_topointer(L, 1);
     NSString *opname = [NSString stringWithCString:lua_tostring(L, 2) encoding:NSUTF8StringEncoding];
     
-    [[LuaState instance] operate:opname onStack:arr];
+    [[LuaBridge instance] operate:opname onStack:arr];
     return 0;
 }
 
 int luafunc_pop(lua_State *L)
 {
     NSMutableArray *arr = (NSMutableArray*)lua_topointer(L, 1);
-    id obj = [arr lastObject];
+    id obj = [[[arr lastObject] retain] autorelease];
     [arr removeLastObject];
     
     if ([obj isKindOfClass:[NSString class]]) {
@@ -400,10 +462,27 @@ int luafunc_pop(lua_State *L)
         lua_pushnumber(L, [obj doubleValue]);
     } else if ([obj isKindOfClass:[NSNull class]]) {
         lua_pushnil(L);
+    } else if ([obj isKindOfClass:[PointerObject class]]) {
+        lua_pushlightuserdata(L, [(PointerObject*)obj ptr]);
     } else {
-        lua_pushlightuserdata(L, [obj retain]);
+        [obj retain];
+
+        void *ud = lua_newuserdata(L, sizeof(void*));
+        void **udptr = (void**)ud;
+        *udptr = obj;
+        lua_rawgeti(L, LUA_REGISTRYINDEX, gc_metatable_ref);
+        lua_setmetatable(L, -2);
     }
+    
     return 1;
+}
+
+int luafunc_clear(lua_State *L)
+{
+    NSMutableArray *arr = (NSMutableArray*)lua_topointer(L, 1);
+    [arr removeAllObjects];
+
+    return 0;
 }
 
 int luafunc_hoge (lua_State *L)
