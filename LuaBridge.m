@@ -10,7 +10,7 @@
 
 #import <objc/runtime.h>
 
-#import "LuaState.h"
+#import "LuaBridge.h"
 #import "PointerObject.h"
 
 #import "lualib.h"
