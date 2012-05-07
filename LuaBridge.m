@@ -456,7 +456,9 @@ int luafunc_pop(lua_State *L)
     id obj = [[[arr lastObject] retain] autorelease];
     [arr removeLastObject];
     
-    if ([obj isKindOfClass:[NSString class]]) {
+    if (obj == nil) {
+        lua_pushnil(L);
+    } else if ([obj isKindOfClass:[NSString class]]) {
         lua_pushstring(L, [obj cStringUsingEncoding:NSUTF8StringEncoding]);
     } else if ([obj isKindOfClass:[NSNumber class]]) {
         lua_pushnumber(L, [obj doubleValue]);
