@@ -369,11 +369,13 @@ static void lua_exception_handler(NSException *exception)
         }
             break;
         case 'v': // A void
+            [stack addObject:[NSNull null]];
             break;
         case '#': // A class object (Class)
         case ':': // A method selector (SEL)
         default:
             NSLog(@"%s: Not implemented", rettype);
+            [stack addObject:[NSNull null]];
             break;
     }
 #undef CNVBUF
