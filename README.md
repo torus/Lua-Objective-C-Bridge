@@ -16,17 +16,25 @@ Define your operator.
 Lua API
 -------
 
+### newstack
+
     stack = objc.newstack()
 
 Returns a new stack to pass and receive paramters between Lua and Objective-C.
+
+### push
 
     objc.push(stack, arg, ...)
 
 Pushes one or more arguments to the stack.
 
+### pop
+
     val = objc.pop(stack)
 
 Pops the last (top) value from the stack.
+
+### operate
 
     objc.operate(stack, "operator_name")
 
