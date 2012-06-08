@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Lua-Objective-C bridge : Bridge between Lua and Objective-C which allows you to call a Objective-C method from a Lua script using NSInvocation." />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Lua-Objective-C bridge</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/torus/Lua-Objective-C-Bridge">View on GitHub</a>
+
+          <h1 id="project_title">Lua-Objective-C bridge</h1>
+          <h2 id="project_tagline">Bridge between Lua and Objective-C which allows you to call a Objective-C method from a Lua script using NSInvocation.</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/torus/Lua-Objective-C-Bridge/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/torus/Lua-Objective-C-Bridge/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>Lua-Objective-C Bridge</h1>
+
+<h2>Objective-C API</h2>
+
+<pre><code>lua_State *L = [[LuaBridge instance] L];
+</code></pre>
+
+<p>Gets lua_State object.</p>
+
+<pre><code>- (void)op_your_operator:(NSMutableArray*)stack
+</code></pre>
+
+<p>Define your operator.</p>
+
+<h2>Lua API</h2>
+
+<h3>newstack</h3>
+
+<pre><code>stack = objc.newstack()
+</code></pre>
+
+<p>Returns a new stack to pass and receive paramters between Lua and Objective-C.</p>
+
+<h3>push</h3>
+
+<pre><code>objc.push(stack, arg, ...)
+</code></pre>
+
+<p>Pushes one or more arguments to the stack.</p>
+
+<h3>pop</h3>
+
+<pre><code>val = objc.pop(stack)
+</code></pre>
+
+<p>Pops the last (top) value from the stack.</p>
+
+<h3>operate</h3>
+
+<pre><code>objc.operate(stack, "operator_name")
+</code></pre>
+
+<p>Calls given operator with the content of the stack.</p>
+
+<h2>Pre-defined Operators</h2>
+
+<h3>call</h3>
+
+<pre><code>objc.push(stack, target, selector, arg, ...)
+objc.operate(stack, "call")
+local ret = objc.pop(stack)
+</code></pre>
+
+<p>"call" operator sends a method specified by selector to the target, then pushes the returned object.
+This is equivalent to following Objective-C expression:</p>
+
+<pre><code>ret = [target selector arg ...]
+</code></pre>
+
+<h2>Adding Operators</h2>
+
+<p>Create a category on the LuaBrige class and implement your operators in folloing signature:</p>
+
+<pre><code>- (void)op_your_operator:(NSMutableArray*)stack
+</code></pre>
+
+<p>Then from Lua script call the operator like this:</p>
+
+<pre><code>objc.operate(stack, "your_operator")
+</code></pre>
+
+<p>Note that in Objective-C, the method name should be "op_<em>your_operator</em>:".</p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Lua-Objective-C bridge maintained by <a href="https://github.com/torus">torus</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
