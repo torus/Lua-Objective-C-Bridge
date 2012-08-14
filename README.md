@@ -40,6 +40,11 @@ Pops the last (top) value from the stack.
 
 Calls given operator with the content of the stack.
 
+### getclass
+
+    cls = objc.getclass(class_name)
+
+Returns the class object for given class name.
 
 Pre-defined Operators
 ---------------------
