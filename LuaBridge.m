@@ -24,6 +24,7 @@ int luafunc_pop(lua_State *L);
 int luafunc_clear(lua_State *L);
 int luafunc_operate(lua_State *L);
 int luafunc_getclass(lua_State *L);
+static void push_object(lua_State *L, id obj);
 
 static int gc_metatable_ref;
 
@@ -383,7 +384,35 @@ static void lua_exception_handler(NSException *exception)
     free(buffer);
 }
 
+- (void)pushObject:(id)obj
+{
+    push_object(L, obj);
+}
+
 @end
+
+static void push_object(lua_State *L, id obj)
+{
+    if (obj == nil) {
+        lua_pushnil(L);
+    } else if ([obj isKindOfClass:[NSString class]]) {
+        lua_pushstring(L, [obj cStringUsingEncoding:NSUTF8StringEncoding]);
+    } else if ([obj isKindOfClass:[NSNumber class]]) {
+        lua_pushnumber(L, [obj doubleValue]);
+    } else if ([obj isKindOfClass:[NSNull class]]) {
+        lua_pushnil(L);
+    } else if ([obj isKindOfClass:[PointerObject class]]) {
+        lua_pushlightuserdata(L, [(PointerObject*)obj ptr]);
+    } else {
+        [obj retain];
+        
+        void *ud = lua_newuserdata(L, sizeof(void*));
+        void **udptr = (void**)ud;
+        *udptr = obj;
+        lua_rawgeti(L, LUA_REGISTRYINDEX, gc_metatable_ref);
+        lua_setmetatable(L, -2);
+    }
+}
 
 int luafunc_newstack(lua_State *L)
 {
@@ -458,25 +487,7 @@ int luafunc_pop(lua_State *L)
     id obj = [[[arr lastObject] retain] autorelease];
     [arr removeLastObject];
     
-    if (obj == nil) {
-        lua_pushnil(L);
-    } else if ([obj isKindOfClass:[NSString class]]) {
-        lua_pushstring(L, [obj cStringUsingEncoding:NSUTF8StringEncoding]);
-    } else if ([obj isKindOfClass:[NSNumber class]]) {
-        lua_pushnumber(L, [obj doubleValue]);
-    } else if ([obj isKindOfClass:[NSNull class]]) {
-        lua_pushnil(L);
-    } else if ([obj isKindOfClass:[PointerObject class]]) {
-        lua_pushlightuserdata(L, [(PointerObject*)obj ptr]);
-    } else {
-        [obj retain];
-
-        void *ud = lua_newuserdata(L, sizeof(void*));
-        void **udptr = (void**)ud;
-        *udptr = obj;
-        lua_rawgeti(L, LUA_REGISTRYINDEX, gc_metatable_ref);
-        lua_setmetatable(L, -2);
-    }
+    push_object(L, obj);
     
     return 1;
 }

@@ -23,6 +23,7 @@ extern "C" {
 @property (readonly) lua_State *L;
 
 + (LuaBridge*)instance;
+- (void)pushObject:(id)obj;
 - (void)dostring:(NSString*)stmt;
 - (void)operate:(NSString*)opname onStack:(NSMutableArray*)stack;
 - (void)op_call:(NSMutableArray*)stack;
