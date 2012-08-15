@@ -51,14 +51,15 @@ Pre-defined Operators
 
 ### call
 
-    objc.push(stack, target, selector, arg, ...)
+    objc.push(stack, ..., arg2, arg1, target, selector)
     objc.operate(stack, "call")
     local ret = objc.pop(stack)
 
 "call" operator sends a method specified by selector to the target, then pushes the returned object.
+Please note that the argments must be pushed in reverse order.
 This is equivalent to following Objective-C expression:
 
-    ret = [target selector arg ...]
+    ret = [target selector arg1 arg2 ...]
 
 
 Adding Operators
