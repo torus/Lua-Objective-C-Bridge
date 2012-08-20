@@ -16,14 +16,15 @@
 #import "lualib.h"
 #import "lauxlib.h"
 
-int luafunc_hoge (lua_State *L);
-
-int luafunc_newstack(lua_State *L);
-int luafunc_push(lua_State *L);
-int luafunc_pop(lua_State *L);
-int luafunc_clear(lua_State *L);
-int luafunc_operate(lua_State *L);
-int luafunc_getclass(lua_State *L);
+#import "LuaBridgeInternal.h"
+//int luafunc_hoge (lua_State *L);
+//
+//int luafunc_newstack(lua_State *L);
+//int luafunc_push(lua_State *L);
+//int luafunc_pop(lua_State *L);
+//int luafunc_clear(lua_State *L);
+//int luafunc_operate(lua_State *L);
+//int luafunc_getclass(lua_State *L);
 static void push_object(lua_State *L, id obj);
 
 static int gc_metatable_ref;
@@ -243,7 +244,13 @@ static void lua_exception_handler(NSException *exception)
                 break;
 
             case '^': // pointer
-                [inv setArgument:&arg atIndex:i];
+                if ([arg isKindOfClass:[PointerObject class]]) {
+                    void *ptr = [(PointerObject*)arg ptr];
+                    [inv setArgument:&ptr atIndex:i];
+                } else {
+                    //[inv setArgument:&arg atIndex:i];
+                    [NSError errorWithDomain:@"Passing wild pointer" code:1 userInfo:nil];
+                }
                 break;
 
             case 'v': // A void
@@ -401,8 +408,8 @@ static void push_object(lua_State *L, id obj)
         lua_pushnumber(L, [obj doubleValue]);
     } else if ([obj isKindOfClass:[NSNull class]]) {
         lua_pushnil(L);
-    } else if ([obj isKindOfClass:[PointerObject class]]) {
-        lua_pushlightuserdata(L, [(PointerObject*)obj ptr]);
+//    } else if ([obj isKindOfClass:[PointerObject class]]) {
+//        lua_pushlightuserdata(L, [(PointerObject*)obj ptr]);
     } else {
         [obj retain];
         
