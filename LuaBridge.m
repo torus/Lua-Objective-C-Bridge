@@ -11,20 +11,12 @@
 #import <objc/runtime.h>
 
 #import "LuaBridge.h"
-//#import "PointerObject.h"
 
 #import "lualib.h"
 #import "lauxlib.h"
 
 #import "LuaBridgeInternal.h"
-//int luafunc_hoge (lua_State *L);
-//
-//int luafunc_newstack(lua_State *L);
-//int luafunc_push(lua_State *L);
-//int luafunc_pop(lua_State *L);
-//int luafunc_clear(lua_State *L);
-//int luafunc_operate(lua_State *L);
-//int luafunc_getclass(lua_State *L);
+
 static void push_object(lua_State *L, id obj);
 
 static int gc_metatable_ref;
