@@ -11,7 +11,7 @@
 #import <objc/runtime.h>
 
 #import "LuaBridge.h"
-#import "PointerObject.h"
+//#import "PointerObject.h"
 
 #import "lualib.h"
 #import "lauxlib.h"
@@ -244,8 +244,8 @@ static void lua_exception_handler(NSException *exception)
                 break;
 
             case '^': // pointer
-                if ([arg isKindOfClass:[PointerObject class]]) {
-                    void *ptr = [(PointerObject*)arg ptr];
+                if ([arg isKindOfClass:[NSValue class]]) {
+                    void *ptr = [(NSValue*)arg pointerValue];
                     [inv setArgument:&ptr atIndex:i];
                 } else {
                     //[inv setArgument:&arg atIndex:i];
@@ -377,7 +377,8 @@ static void lua_exception_handler(NSException *exception)
         case '^':
         {
             void *x = *(void**)buffer;
-            [stack addObject:[PointerObject pointerWithVoidPtr:x]];
+//            [stack addObject:[PointerObject pointerWithVoidPtr:x]];
+            [stack addObject:[NSValue valueWithPointer:x]];
         }
             break;
         case 'v': // A void
