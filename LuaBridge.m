@@ -366,7 +366,11 @@ static void lua_exception_handler(NSException *exception)
         case '@': // An object (whether statically typed or typed id)
         {
             id x = *(id*)buffer;
-            [stack addObject:x];
+            if (x) {
+                [stack addObject:x];
+            } else {
+                [stack addObject:[NSNull null]];
+            }
         }
             break;
             
