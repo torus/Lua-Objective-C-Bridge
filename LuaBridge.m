@@ -388,6 +388,25 @@ static void lua_exception_handler(NSException *exception)
     free(buffer);
 }
 
+- (NSNumber *)popNumber:(NSMutableArray*)stack
+{
+    NSNumber *num = [[[stack lastObject] retain] autorelease];
+    [stack removeLastObject];
+    
+    return num;
+}
+
+- (void)op_cgrectmake:(NSMutableArray*)stack
+{
+    double x = [[self popNumber:stack] doubleValue];
+    double y = [[self popNumber:stack] doubleValue];
+    double w = [[self popNumber:stack] doubleValue];
+    double h = [[self popNumber:stack] doubleValue];
+    
+    CGRect rect = CGRectMake(x, y, w, h);
+    [stack addObject:[NSValue valueWithCGRect:rect]];
+}
+
 - (void)pushObject:(id)obj
 {
     push_object(L, obj);
