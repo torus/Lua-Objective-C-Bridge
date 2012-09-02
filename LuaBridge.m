@@ -244,6 +244,13 @@ static void lua_exception_handler(NSException *exception)
                     [NSError errorWithDomain:@"Passing wild pointer" code:1 userInfo:nil];
                 }
                 break;
+                
+            case '{': // {name=type...} A structure
+                if ([[NSString stringWithUTF8String:t] rangeOfString:@"CGRect"].location != NSNotFound) {
+                    CGRect rect = [(NSValue*)arg CGRectValue];
+                    [inv setArgument:&rect atIndex:i];
+                }
+                break;
 
             case 'v': // A void
             case '#': // A class object (Class)
