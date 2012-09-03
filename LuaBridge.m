@@ -383,6 +383,14 @@ static void lua_exception_handler(NSException *exception)
         case 'v': // A void
             [stack addObject:[NSNull null]];
             break;
+
+        case '{': // {name=type...} A structure
+            if ([[NSString stringWithUTF8String:rettype] rangeOfString:@"CGRect"].location != NSNotFound) {
+                CGRect *rect = (CGRect*)buffer;
+                [stack addObject:[NSValue valueWithCGRect:*rect]];
+            }
+            break;
+
         case '#': // A class object (Class)
         case ':': // A method selector (SEL)
         default:
