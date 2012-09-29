@@ -473,7 +473,8 @@ int luafunc_push(lua_State *L)
     
     NSMutableArray *arr = (NSMutableArray*)lua_topointer(L, 1);
     for (int i = 2; i <= top; i ++) {
-        switch (lua_type(L, i)) {
+        int t = lua_type(L, i);
+        switch (t) {
             case LUA_TNIL:
                 [arr addObject:[NSNull null]];
                 break;
@@ -501,8 +502,11 @@ int luafunc_push(lua_State *L)
             case LUA_TTHREAD:
             case LUA_TNONE:
             default:
-                lua_pushstring(L, "Value type not supported.");
+            {
+                NSString *errmsg = [NSString stringWithFormat:@"Value type not supported. type = %d", t];
+                lua_pushstring(L, [errmsg UTF8String]);
                 lua_error(L);
+            }
                 break;
         }
     }
