@@ -56,6 +56,7 @@ int finalize_object(lua_State *L)
         ADDMETHOD(clear);
         ADDMETHOD(operate);
         ADDMETHOD(getclass);
+        ADDMETHOD(extract);
 
         lua_setglobal(L, "objc");
 #undef ADDMETHOD        
@@ -246,10 +247,19 @@ static void lua_exception_handler(NSException *exception)
                 break;
                 
             case '{': // {name=type...} A structure
-                if ([[NSString stringWithUTF8String:t] rangeOfString:@"CGRect"].location != NSNotFound) {
+            {
+                NSString *t_str = [NSString stringWithUTF8String:t];
+                if ([t_str hasPrefix:@"{CGRect"]) {
                     CGRect rect = [(NSValue*)arg CGRectValue];
                     [inv setArgument:&rect atIndex:i];
+                } else if ([t_str hasPrefix:@"{CGSize"]) {
+                    CGSize size = [(NSValue*)arg CGSizeValue];
+                    [inv setArgument:&size atIndex:i];
+                } else if ([t_str hasPrefix:@"{CGPoint"]) {
+                    CGPoint point = [(NSValue*)arg CGPointValue];
+                    [inv setArgument:&point atIndex:i];
                 }
+            }
                 break;
 
             case 'v': // A void
@@ -385,10 +395,20 @@ static void lua_exception_handler(NSException *exception)
             break;
 
         case '{': // {name=type...} A structure
-            if ([[NSString stringWithUTF8String:rettype] rangeOfString:@"CGRect"].location != NSNotFound) {
+        {
+            NSString *t = [NSString stringWithUTF8String:rettype];
+            
+            if ([t hasPrefix:@"{CGRect"]) {
                 CGRect *rect = (CGRect*)buffer;
                 [stack addObject:[NSValue valueWithCGRect:*rect]];
+            } else if ([t hasPrefix:@"{CGSize"]) {
+                CGSize *size = (CGSize*)buffer;
+                [stack addObject:[NSValue valueWithCGSize:*size]];
+            } else if ([t hasPrefix:@"{CGPoint"]) {
+                CGPoint *size = (CGPoint*)buffer;
+                [stack addObject:[NSValue valueWithCGPoint:*size]];
             }
+        }
             break;
 
         case '#': // A class object (Class)
@@ -572,4 +592,35 @@ int luafunc_hoge (lua_State *L)
     lua_pushinteger(L, *(unichar*)buffer);
 
     return 1;
+}
+
+int luafunc_extract (lua_State *L)
+{
+    NSMutableArray *arr = (NSMutableArray*)lua_topointer(L, 1);
+    NSString *type = [NSString stringWithUTF8String:lua_tostring(L, 2)];
+    NSValue *val = [[[arr lastObject] retain] autorelease];
+    [arr removeLastObject];
+    
+    int retnum = 0;
+        
+    if ([type compare:@"CGSize"] == NSOrderedSame) {
+        CGSize size = [val CGSizeValue];
+        lua_pushnumber(L, size.width);
+        lua_pushnumber(L, size.height);
+        retnum = 2;
+    } else if ([type compare:@"CGPoint"] == NSOrderedSame) {
+        CGPoint p = [val CGPointValue];
+        lua_pushnumber(L, p.x);
+        lua_pushnumber(L, p.y);
+        retnum = 2;
+    } else if ([type compare:@"CGRect"] == NSOrderedSame) {
+        CGRect r = [val CGRectValue];
+        lua_pushnumber(L, r.origin.x);
+        lua_pushnumber(L, r.origin.y);
+        lua_pushnumber(L, r.size.width);
+        lua_pushnumber(L, r.size.height);
+        retnum = 4;
+    }
+    
+    return retnum;
 }

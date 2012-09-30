@@ -17,6 +17,7 @@ int luafunc_pop(lua_State *L);
 int luafunc_clear(lua_State *L);
 int luafunc_operate(lua_State *L);
 int luafunc_getclass(lua_State *L);
+int luafunc_extract(lua_State *L);
 
 
 #endif
