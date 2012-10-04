@@ -17,7 +17,7 @@
 
 #import "LuaBridgeInternal.h"
 
-static void push_object(lua_State *L, id obj);
+void push_object(lua_State *L, id obj);
 
 static int gc_metatable_ref;
 
@@ -258,6 +258,9 @@ static void lua_exception_handler(NSException *exception)
                 } else if ([t_str hasPrefix:@"{CGPoint"]) {
                     CGPoint point = [(NSValue*)arg CGPointValue];
                     [inv setArgument:&point atIndex:i];
+                } else if ([t_str hasPrefix:@"{CGAffineTransform"]) {
+                    CGAffineTransform tran = [(NSValue*)arg CGAffineTransformValue];
+                    [inv setArgument:&tran atIndex:i];
                 }
             }
                 break;
@@ -407,6 +410,9 @@ static void lua_exception_handler(NSException *exception)
             } else if ([t hasPrefix:@"{CGPoint"]) {
                 CGPoint *size = (CGPoint*)buffer;
                 [stack addObject:[NSValue valueWithCGPoint:*size]];
+            } else if ([t hasPrefix:@"{CGAffineTransform"]) {
+                CGAffineTransform *tran = (CGAffineTransform*)buffer;
+                [stack addObject:[NSValue valueWithCGAffineTransform:*tran]];
             }
         }
             break;
@@ -449,7 +455,7 @@ static void lua_exception_handler(NSException *exception)
 
 @end
 
-static void push_object(lua_State *L, id obj)
+void push_object(lua_State *L, id obj)
 {
     if (obj == nil) {
         lua_pushnil(L);
@@ -620,7 +626,16 @@ int luafunc_extract (lua_State *L)
         lua_pushnumber(L, r.size.width);
         lua_pushnumber(L, r.size.height);
         retnum = 4;
+    } else if ([type compare:@"CGAffineTransform"] == NSOrderedSame) {
+        CGAffineTransform t = [val CGAffineTransformValue];
+        lua_pushnumber(L, t.a);
+        lua_pushnumber(L, t.b);
+        lua_pushnumber(L, t.c);
+        lua_pushnumber(L, t.d);
+        lua_pushnumber(L, t.tx);
+        lua_pushnumber(L, t.ty);
+        retnum = 6;
     }
-    
+
     return retnum;
 }
