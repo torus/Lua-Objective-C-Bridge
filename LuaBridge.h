@@ -1,5 +1,5 @@
 //
-//  LuaState.h
+//  LuaBridge.h
 //  Lua-Objective-C Bridge
 //
 //  Created by Toru Hisai on 12/04/13.
@@ -28,4 +28,9 @@ extern "C" {
 - (void)operate:(NSString*)opname onStack:(NSMutableArray*)stack;
 - (void)op_call:(NSMutableArray*)stack;
 - (void)op_cgrectmake:(NSMutableArray*)stack;
+@end
+
+@interface LuaObjectReference : NSObject
+@property int ref;
+@property lua_State *L;
 @end

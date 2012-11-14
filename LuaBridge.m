@@ -455,6 +455,15 @@ static void lua_exception_handler(NSException *exception)
 
 @end
 
+@implementation LuaObjectReference
+@synthesize ref, L;
+- (void)dealloc
+{
+    luaL_unref(self.L, LUA_REGISTRYINDEX, self.ref);
+    [super dealloc];
+}
+@end
+
 void push_object(lua_State *L, id obj)
 {
     if (obj == nil) {
@@ -467,6 +476,9 @@ void push_object(lua_State *L, id obj)
         lua_pushnil(L);
 //    } else if ([obj isKindOfClass:[PointerObject class]]) {
 //        lua_pushlightuserdata(L, [(PointerObject*)obj ptr]);
+    } else if ([obj isKindOfClass:[LuaObjectReference class]]) {
+        int ref = ((LuaObjectReference*)obj). ref;
+        lua_rawgeti(L, LUA_REGISTRYINDEX, ref);
     } else {
         [obj retain];
         
@@ -526,6 +538,13 @@ int luafunc_push(lua_State *L)
             case LUA_TTABLE:
             case LUA_TFUNCTION:
             case LUA_TTHREAD:
+            {
+                LuaObjectReference *ref = [[LuaObjectReference new] autorelease];
+                ref.ref = luaL_ref(L, LUA_REGISTRYINDEX);
+                ref.L = L;
+                [arr addObject:ref];
+            }
+                break;
             case LUA_TNONE:
             default:
             {
