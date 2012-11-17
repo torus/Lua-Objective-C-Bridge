@@ -51,7 +51,7 @@ Data Type Conversion
 
 <table>
 <tr><th>Lua</th><th>Objective-C</th></tr>
-<tr><td>nil</td><td>Null (nil)</td></tr>
+<tr><td>nil</td><td>NSNull (nil)</td></tr>
 <tr><td>string</td><td>NSString</td></tr>
 <tr><td>number, boolean</td><td>NSNumber</td></tr>
 <tr><td>userdata</td><td>other NSObject-derived type</td></tr>
