@@ -34,3 +34,5 @@ extern "C" {
 @property int ref;
 @property lua_State *L;
 @end
+
+void luabridge_push_object(lua_State *L, id obj);

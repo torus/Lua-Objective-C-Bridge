@@ -17,8 +17,6 @@
 
 #import "LuaBridgeInternal.h"
 
-void push_object(lua_State *L, id obj);
-
 static int gc_metatable_ref;
 
 int finalize_object(lua_State *L)
@@ -450,7 +448,7 @@ static void lua_exception_handler(NSException *exception)
 
 - (void)pushObject:(id)obj
 {
-    push_object(L, obj);
+    luabridge_push_object(L, obj);
 }
 
 @end
@@ -464,7 +462,7 @@ static void lua_exception_handler(NSException *exception)
 }
 @end
 
-void push_object(lua_State *L, id obj)
+void luabridge_push_object(lua_State *L, id obj)
 {
     if (obj == nil) {
         lua_pushnil(L);
@@ -574,7 +572,7 @@ int luafunc_pop(lua_State *L)
     id obj = [[[arr lastObject] retain] autorelease];
     [arr removeLastObject];
     
-    push_object(L, obj);
+    luabridge_push_object(L, obj);
     
     return 1;
 }
