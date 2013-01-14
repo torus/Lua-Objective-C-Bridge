@@ -1,4 +1,16 @@
 --
+-- Objective-C Classes
+--
+
+local Class = {}
+setmetatable(Class, {__index = function(tbl, key)
+                                  local cls = objc.getclass(key)
+                                  tbl[key] = cls
+                                  return cls
+                               end})
+objc.class = Class
+
+--
 -- Context
 --
 
