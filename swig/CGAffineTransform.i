@@ -14,11 +14,12 @@ int CGAffineTransform_to_NSValue (lua_State *L)
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_CGAffineTransform,0))){
     SWIG_fail_ptr("CGAffineTransformWrap",1,SWIGTYPE_p_CGAffineTransform);
   }
-
+  {
   NSValue *val = [NSValue valueWithCGAffineTransform:*arg1];
   luabridge_push_object(L, val); SWIG_arg ++;
 
   return SWIG_arg;
+  }
 
 fail:
   lua_error(L);
