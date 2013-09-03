@@ -27,13 +27,47 @@ First, import Lua and the bridge header files:
     #import "lauxlib.h"
     #import "LuaBridge.h"
 
+Then,
+
     lua_State *L = [[LuaBridge instance] L];
 
-Gets lua_State object.
+gets the lua_State object to call Lua functions.
+
+
+High-Level Lua API
+------------------
+
+    local ctx = objc.context:create()
+
+Creates a new context.
+
+    local wrapped_object = ctx:wrap(...)
+
+Returns wrapped Objective-C object. Then, you can send a message to the object like:
+
+    wrapped_object("setOpaque:", false)
+
+You need to unwrap the object to pass to a method using `-` (unary minus) like:
+
+    local webview = ctx:wrap(objc.class.UIWebView)("alloc")("initWithFrame:", -rect)
+
+Any Objective-C class object can be obtained via `objc.class` table. For example
+
+    objc.class.UIWebView
+
+Returns the UIWebView class object.
+
+
+
+Extending the Bridge
+--------------------
+
+LuaBridge uses a stack to share objects between Lua and Objective-C.
+And some operators are defined to handle stuff in the stack.
+
+You can add user-defined operators to the LuaBridge class folloing this signature:
 
     - (void)op_your_operator:(NSMutableArray*)stack
-
-Define your operator.
 
 
 Low-Level Lua API
