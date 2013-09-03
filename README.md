@@ -1,8 +1,31 @@
 Lua-Objective-C Bridge
 ======================
 
+Synopsis
+--------
+
+    local ctx = objc.context:create()
+    local img = ctx:wrap(objc.class.UIImage)("imageNamed:", "spaceship.png")
+    local ship = ctx:wrap(objc.class.UIImageView)("alloc")("initWithImage:", -img)
+
+The Lua code above is equivalent to following Objective-C code:
+
+    UIImage *img = [UIImage imageNamed:@"spaceship.png"];
+    UIImageView *ship = [[UIImageView alloc] initWithImage:img];
+
+More Example:
+https://github.com/torus/ios-lua-lander/blob/master/LuaLander/LuaLander/bootstrap.lua
+
+
 Objective-C API
 ---------------
+
+First, import Lua and the bridge header files:
+
+    #import "lua.h"
+    #import "lualib.h"
+    #import "lauxlib.h"
+    #import "LuaBridge.h"
 
     lua_State *L = [[LuaBridge instance] L];
 
@@ -13,8 +36,8 @@ Gets lua_State object.
 Define your operator.
 
 
-Lua API
--------
+Low-Level Lua API
+-----------------
 
 ### newstack
 
