@@ -23,11 +23,11 @@ int finalize_object(lua_State *L)
 {
     void *p = lua_touserdata(L, 1);
     void **ptr = (void**)p;
-    id obj = (id)*ptr;
+    id obj = (__bridge id)*ptr;
     
 //    NSLog(@"%s: releasing %@ retainCount = %d", __PRETTY_FUNCTION__, obj, [obj retainCount]);
 
-    [obj release];
+  
 
     return 0;
 }
@@ -112,8 +112,8 @@ static void lua_exception_handler(NSException *exception)
 - (void)operate:(NSString*)opname onStack:(NSMutableArray*)stack
 {
     orig_exception_handler = NSGetUncaughtExceptionHandler();
-    exception_handler_stack = [stack retain];
-    exception_handler_opname = [opname retain];
+    exception_handler_stack = stack;
+    exception_handler_opname = opname;
 
     NSSetUncaughtExceptionHandler(lua_exception_handler);
     
@@ -126,15 +126,14 @@ static void lua_exception_handler(NSException *exception)
     orig_exception_handler = NULL;
     exception_handler_stack = NULL;
     exception_handler_opname = NULL;
-    [stack release];
-    [opname release];
+
 }
 
 - (void)op_call:(NSMutableArray*)stack
 {
-    NSString *message = [(NSString*)[[stack lastObject] retain] autorelease];
+    NSString *message = (NSString*)[stack lastObject];
     [stack removeLastObject];
-    id target = [[[stack lastObject] retain] autorelease];
+    id target = [stack lastObject] ;
     [stack removeLastObject];
     
     SEL sel = sel_getUid([message cStringUsingEncoding:NSUTF8StringEncoding]);
@@ -147,7 +146,7 @@ static void lua_exception_handler(NSException *exception)
     for (int i = 2; i < numarg; i++) {
         const char *t = [sig getArgumentTypeAtIndex:i];
 //        NSLog(@"arg %d: %s", i, t);
-        id arg = [[[stack lastObject] retain] autorelease];
+        id arg = [stack lastObject];
         [stack removeLastObject];
         
         switch (t[0]) {
@@ -381,7 +380,7 @@ static void lua_exception_handler(NSException *exception)
             break;
         case '@': // An object (whether statically typed or typed id)
         {
-            id x = *(id*)buffer;
+            id x = (__bridge id)(buffer);
             if (x) {
                 [stack addObject:x];
             } else {
@@ -435,7 +434,7 @@ static void lua_exception_handler(NSException *exception)
 
 - (NSNumber *)popNumber:(NSMutableArray*)stack
 {
-    NSNumber *num = [[[stack lastObject] retain] autorelease];
+    NSNumber *num = [stack lastObject];
     [stack removeLastObject];
     
     return num;
@@ -464,7 +463,7 @@ static void lua_exception_handler(NSException *exception)
 - (void)dealloc
 {
     luaL_unref(self.L, LUA_REGISTRYINDEX, self.ref);
-    [super dealloc];
+ 
 }
 @end
 
@@ -484,11 +483,11 @@ void luabridge_push_object(lua_State *L, id obj)
         int ref = ((LuaObjectReference*)obj). ref;
         lua_rawgeti(L, LUA_REGISTRYINDEX, ref);
     } else {
-        [obj retain];
+      
         
         void *ud = lua_newuserdata(L, sizeof(void*));
         void **udptr = (void**)ud;
-        *udptr = obj;
+        *udptr = (__bridge void *)(obj);
         lua_rawgeti(L, LUA_REGISTRYINDEX, gc_metatable_ref);
         lua_setmetatable(L, -2);
     }
@@ -498,7 +497,7 @@ int luafunc_newstack(lua_State *L)
 {
     NSMutableArray *arr = [[NSMutableArray alloc] init];
     
-    lua_pushlightuserdata(L, arr);
+    lua_pushlightuserdata(L, (__bridge void *)(arr));
     
     return 1;
 }
@@ -506,14 +505,14 @@ int luafunc_getclass(lua_State *L)
 {
     const char *classname = lua_tostring(L, -1);
     id cls = objc_getClass(classname);
-    lua_pushlightuserdata(L, cls);
+    lua_pushlightuserdata(L, (__bridge void *)(cls));
     return 1;
 }
 int luafunc_push(lua_State *L)
 {
     int top = lua_gettop(L);
     
-    NSMutableArray *arr = (NSMutableArray*)lua_topointer(L, 1);
+    NSMutableArray *arr = (__bridge NSMutableArray*)lua_topointer(L, 1);
     for (int i = 2; i <= top; i ++) {
         int t = lua_type(L, i);
         switch (t) {
@@ -530,20 +529,20 @@ int luafunc_push(lua_State *L)
                 [arr addObject:[NSString stringWithCString:lua_tostring(L, i) encoding:NSUTF8StringEncoding]];
                 break;
             case LUA_TLIGHTUSERDATA:
-                [arr addObject:(id)lua_topointer(L, i)];
+                [arr addObject:(__bridge id)lua_topointer(L, i)];
                 break;
             case LUA_TUSERDATA:
             {
                 void *p = lua_touserdata(L, i);
                 void **ptr = (void**)p;
-                [arr addObject:(id)*ptr];
+                [arr addObject:(__bridge id)*ptr];
             }
                 break;                
             case LUA_TTABLE:
             case LUA_TFUNCTION:
             case LUA_TTHREAD:
             {
-                LuaObjectReference *ref = [[LuaObjectReference new] autorelease];
+                LuaObjectReference *ref = [LuaObjectReference new];
                 ref.ref = luaL_ref(L, LUA_REGISTRYINDEX);
                 ref.L = L;
                 [arr addObject:ref];
@@ -565,7 +564,7 @@ int luafunc_push(lua_State *L)
 
 int luafunc_operate(lua_State *L)
 {
-    NSMutableArray *arr = (NSMutableArray*)lua_topointer(L, 1);
+    NSMutableArray *arr = (__bridge NSMutableArray*)lua_topointer(L, 1);
     NSString *opname = [NSString stringWithCString:lua_tostring(L, 2) encoding:NSUTF8StringEncoding];
     
     [[LuaBridge instance] operate:opname onStack:arr];
@@ -574,8 +573,8 @@ int luafunc_operate(lua_State *L)
 
 int luafunc_pop(lua_State *L)
 {
-    NSMutableArray *arr = (NSMutableArray*)lua_topointer(L, 1);
-    id obj = [[[arr lastObject] retain] autorelease];
+    NSMutableArray *arr = (__bridge NSMutableArray*)lua_topointer(L, 1);
+    id obj = [arr lastObject];
     [arr removeLastObject];
     
     luabridge_push_object(L, obj);
@@ -585,7 +584,7 @@ int luafunc_pop(lua_State *L)
 
 int luafunc_clear(lua_State *L)
 {
-    NSMutableArray *arr = (NSMutableArray*)lua_topointer(L, 1);
+    NSMutableArray *arr = (__bridge NSMutableArray*)lua_topointer(L, 1);
     [arr removeAllObjects];
 
     return 0;
@@ -625,9 +624,9 @@ int luafunc_hoge (lua_State *L)
 
 int luafunc_extract (lua_State *L)
 {
-    NSMutableArray *arr = (NSMutableArray*)lua_topointer(L, 1);
+    NSMutableArray *arr = (__bridge NSMutableArray*)lua_topointer(L, 1);
     NSString *type = [NSString stringWithUTF8String:lua_tostring(L, 2)];
-    NSValue *val = [[[arr lastObject] retain] autorelease];
+    NSValue *val = [arr lastObject];
     [arr removeLastObject];
     
     int retnum = 0;
