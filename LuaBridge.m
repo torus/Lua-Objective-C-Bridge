@@ -23,11 +23,11 @@ int finalize_object(lua_State *L)
 {
     void *p = lua_touserdata(L, 1);
     void **ptr = (void**)p;
-    id obj = (__bridge id)*ptr;
-    
-//    NSLog(@"%s: releasing %@ retainCount = %d", __PRETTY_FUNCTION__, obj, [obj retainCount]);
+    id obj = (__bridge_transfer id)*ptr;
+//    NSLog(@"%s: releasing %@", __PRETTY_FUNCTION__, obj);
+//    CFBridgingRelease(*ptr);
 
-  
+//    NSLog(@"%s: releasing %@ retainCount = %d", __PRETTY_FUNCTION__, obj, [obj retainCount]);
 
     return 0;
 }
@@ -380,8 +380,10 @@ static void lua_exception_handler(NSException *exception)
             break;
         case '@': // An object (whether statically typed or typed id)
         {
-            id x = (__bridge id)(buffer);
+            id x = (__bridge id)*((void **)buffer);
+//            NSLog(@"stack %@", stack);
             if (x) {
+//                NSLog(@"x %@", x);
                 [stack addObject:x];
             } else {
                 [stack addObject:[NSNull null]];
@@ -463,7 +465,6 @@ static void lua_exception_handler(NSException *exception)
 - (void)dealloc
 {
     luaL_unref(self.L, LUA_REGISTRYINDEX, self.ref);
- 
 }
 @end
 
@@ -487,7 +488,7 @@ void luabridge_push_object(lua_State *L, id obj)
         
         void *ud = lua_newuserdata(L, sizeof(void*));
         void **udptr = (void**)ud;
-        *udptr = (__bridge void *)(obj);
+        *udptr = (__bridge_retained void *)(obj);
         lua_rawgeti(L, LUA_REGISTRYINDEX, gc_metatable_ref);
         lua_setmetatable(L, -2);
     }
@@ -497,7 +498,7 @@ int luafunc_newstack(lua_State *L)
 {
     NSMutableArray *arr = [[NSMutableArray alloc] init];
     
-    lua_pushlightuserdata(L, (__bridge void *)(arr));
+    lua_pushlightuserdata(L, (__bridge_retained void *)(arr));
     
     return 1;
 }
@@ -513,6 +514,7 @@ int luafunc_push(lua_State *L)
     int top = lua_gettop(L);
     
     NSMutableArray *arr = (__bridge NSMutableArray*)lua_topointer(L, 1);
+//    NSLog(@"arr %@", arr);
     for (int i = 2; i <= top; i ++) {
         int t = lua_type(L, i);
         switch (t) {
