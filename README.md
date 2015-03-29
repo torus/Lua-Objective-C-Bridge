@@ -1,6 +1,8 @@
 Lua-Objective-C Bridge
 ======================
 
+[![Join the chat at https://gitter.im/torus/Lua-Objective-C-Bridge](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/torus/Lua-Objective-C-Bridge?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 Synopsis
 --------
 
