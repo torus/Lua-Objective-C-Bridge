@@ -37,8 +37,7 @@
     XCTAssert(self.L);
 }
 
-- (void)testFunctionCall {
-    const char *code = "return objc.context:create():wrap(objc.class.LuaObjCTest)('alloc')('init')('sum:withAnotherValue:', 1, 2)";
+- (void)execLuaCode: (const char*)code {
     int fail = luaL_dostring(self.L, code);
     XCTAssertFalse(fail);
 
@@ -46,9 +45,31 @@
         const char *err = lua_tostring(self.L, -1);
         NSLog(@"error: %d, %s", fail, err);
     }
+}
+
+- (void)testFunctionCall {
+    const char *code = "return objc.context:create():wrap(objc.class.LuaObjCTest)"
+    "('alloc')('init')('sum:withAnotherValue:', 1, 2)";
+    [self execLuaCode:code];
 
     lua_Integer result = lua_tointeger(self.L, -1);
     XCTAssertEqual(result, 3);
+}
+
+- (void)testNumber {
+    const char *code = "return 0.125";
+    [self execLuaCode:code];
+
+    lua_Number result = lua_tonumber(self.L, -1);
+    XCTAssertEqual(result, 0.125);
+}
+
+- (void)testString {
+    const char *code = "return 'hello!'";
+    [self execLuaCode:code];
+
+    const char *result = lua_tostring(self.L, -1);
+    XCTAssert(!strcmp(result, "hello!"));
 }
 
 - (void)testExample {
