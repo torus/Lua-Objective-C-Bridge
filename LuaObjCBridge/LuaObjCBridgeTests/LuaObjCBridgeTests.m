@@ -41,7 +41,7 @@
     const char *code = "return objc.context:create():wrap(objc.class.LuaObjCTest)('alloc')('init')('sum:withAnotherValue:', 1, 2)";
     int fail = luaL_dostring(self.L, code);
     XCTAssertFalse(fail);
-    
+
     if (fail) {
         const char *err = lua_tostring(self.L, -1);
         NSLog(@"error: %d, %s", fail, err);
