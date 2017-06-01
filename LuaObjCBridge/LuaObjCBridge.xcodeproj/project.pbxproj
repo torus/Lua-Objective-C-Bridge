@@ -47,6 +47,9 @@
 		9C641A711EDB557200851CAD /* lvm.c in Sources */ = {isa = PBXBuildFile; fileRef = 9C641A4F1EDB557100851CAD /* lvm.c */; };
 		9C641A721EDB557200851CAD /* lzio.c in Sources */ = {isa = PBXBuildFile; fileRef = 9C641A511EDB557100851CAD /* lzio.c */; };
 		9C641A761EDB55B500851CAD /* LuaBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 9C641A741EDB55B500851CAD /* LuaBridge.m */; };
+		9C641A781EDC9D9A00851CAD /* LuaObjCTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 9C641A771EDC9D9A00851CAD /* LuaObjCTest.m */; };
+		9C641A7F1EE0818200851CAD /* utils.lua in Resources */ = {isa = PBXBuildFile; fileRef = 9C641A7E1EE0818200851CAD /* utils.lua */; };
+		9C641A801EE0818200851CAD /* utils.lua in Resources */ = {isa = PBXBuildFile; fileRef = 9C641A7E1EE0818200851CAD /* utils.lua */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -133,6 +136,8 @@
 		9C641A731EDB55B500851CAD /* LuaBridge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LuaBridge.h; path = ../../LuaBridge.h; sourceTree = "<group>"; };
 		9C641A741EDB55B500851CAD /* LuaBridge.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LuaBridge.m; path = ../../LuaBridge.m; sourceTree = "<group>"; };
 		9C641A751EDB55B500851CAD /* LuaBridgeInternal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LuaBridgeInternal.h; path = ../../LuaBridgeInternal.h; sourceTree = "<group>"; };
+		9C641A771EDC9D9A00851CAD /* LuaObjCTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LuaObjCTest.m; sourceTree = "<group>"; };
+		9C641A7E1EE0818200851CAD /* utils.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = utils.lua; path = ../../utils.lua; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -174,6 +179,7 @@
 		9C6419F31EDB523200851CAD /* LuaObjCBridge */ = {
 			isa = PBXGroup;
 			children = (
+				9C641A7E1EE0818200851CAD /* utils.lua */,
 				9C6419F71EDB523200851CAD /* AppDelegate.h */,
 				9C6419F81EDB523200851CAD /* AppDelegate.m */,
 				9C6419FA1EDB523200851CAD /* ViewController.h */,
@@ -204,6 +210,7 @@
 				9C641A191EDB554600851CAD /* Lua */,
 				9C641A0E1EDB523300851CAD /* LuaObjCBridgeTests.m */,
 				9C641A101EDB523300851CAD /* Info.plist */,
+				9C641A771EDC9D9A00851CAD /* LuaObjCTest.m */,
 			);
 			path = LuaObjCBridgeTests;
 			sourceTree = "<group>";
@@ -358,6 +365,7 @@
 			files = (
 				9C641A041EDB523300851CAD /* LaunchScreen.storyboard in Resources */,
 				9C641A011EDB523300851CAD /* Assets.xcassets in Resources */,
+				9C641A7F1EE0818200851CAD /* utils.lua in Resources */,
 				9C6419FF1EDB523200851CAD /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -366,6 +374,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9C641A801EE0818200851CAD /* utils.lua in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -387,6 +396,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				9C641A5E1EDB557200851CAD /* lfunc.c in Sources */,
+				9C641A781EDC9D9A00851CAD /* LuaObjCTest.m in Sources */,
 				9C641A661EDB557200851CAD /* lobject.c in Sources */,
 				9C641A5C1EDB557200851CAD /* ldo.c in Sources */,
 				9C641A701EDB557200851CAD /* lundump.c in Sources */,
