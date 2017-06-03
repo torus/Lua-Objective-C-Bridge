@@ -18,6 +18,12 @@ The Lua code above is equivalent to following Objective-C code:
 More Example:
 https://github.com/torus/ios-lua-lander/blob/master/LuaLander/LuaLander/bootstrap.lua
 
+Requirements
+------------
+
+-   Lua 5.2.x or Lua 5.3.x
+-   iOS 8.0 or later (probably also works on older iOS)
+
 
 Objective-C API
 ---------------
