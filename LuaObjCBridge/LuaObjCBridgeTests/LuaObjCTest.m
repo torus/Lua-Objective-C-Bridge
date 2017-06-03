@@ -21,4 +21,12 @@
     return a + b;
 }
 
+- (NSString*)hello: (NSString *)src {
+    return [NSString stringWithFormat:@"Hello %@!", src];
+}
+
+- (double)sumDouble: (double) a withAnotherValue: (double) b {
+    return a + b;
+}
+
 @end

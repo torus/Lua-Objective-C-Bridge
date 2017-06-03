@@ -47,15 +47,6 @@
     }
 }
 
-- (void)testFunctionCall {
-    const char *code = "return objc.context:create():wrap(objc.class.LuaObjCTest)"
-    "('alloc')('init')('sum:withAnotherValue:', 1, 2)";
-    [self execLuaCode:code];
-
-    lua_Integer result = lua_tointeger(self.L, -1);
-    XCTAssertEqual(result, 3);
-}
-
 - (void)testNumber {
     const char *code = "return 0.125";
     [self execLuaCode:code];
@@ -64,12 +55,36 @@
     XCTAssertEqual(result, 0.125);
 }
 
-- (void)testString {
-    const char *code = "return 'hello!'";
+- (void)testVersion {
+    const char *code = "return _VERSION";
     [self execLuaCode:code];
 
     const char *result = lua_tostring(self.L, -1);
-    XCTAssert(!strcmp(result, "hello!"));
+    XCTAssert(!strcmp(result, "Lua 5.3"));
+}
+
+- (void)testInteger {
+    const char *code = "return objc.context:create():wrap(objc.class.LuaObjCTest)"
+    "('alloc')('init')('sum:withAnotherValue:', 1, 2)";
+    [self execLuaCode:code];
+
+    lua_Integer result = lua_tointeger(self.L, -1);
+    XCTAssertEqual(result, 3);
+}
+
+- (void)testDouble {
+    const char *code = "return objc.context:create():wrap(objc.class.LuaObjCTest)"
+    "('alloc')('init')('sumDouble:withAnotherValue:', 1.0, 2.0)";
+    [self execLuaCode:code];
+
+    lua_Number result = lua_tonumber(self.L, -1);
+    XCTAssertEqual(result, 3.0);
+}
+
+- (void)testString {
+    const char *code = "assert (objc.context:create():wrap(objc.class.LuaObjCTest)"
+    "('alloc')('init')('hello:', 'Lua') == 'Hello Lua!')";
+    [self execLuaCode:code];
 }
 
 - (void)testExample {
