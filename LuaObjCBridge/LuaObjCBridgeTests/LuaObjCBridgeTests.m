@@ -8,6 +8,8 @@
 
 #import <XCTest/XCTest.h>
 
+#import <objc/runtime.h>
+
 #import "lua.h"
 #import "lualib.h"
 #import "lauxlib.h"
@@ -84,6 +86,28 @@
 - (void)testString {
     const char *code = "assert (objc.context:create():wrap(objc.class.LuaObjCTest)"
     "('alloc')('init')('hello:', 'Lua') == 'Hello Lua!')";
+    [self execLuaCode:code];
+}
+
+- (void)testClassDefinition {
+    const char *code =
+    ("var st = objc.newstack();"
+     "objc.push(st, 'MyLuaClass');"
+     "objc.operate(st, 'addClass')");
+    [self execLuaCode:code];
+    
+    id cls = objc_getClass("MyLuaClass");
+    XCTAssertNotNil(cls);
+}
+
+- (void)testMethodDefinition {
+    const char *code =
+    ("var st = objc.newstack();"
+     "objc.push(st, objc.class.LuaObjCTest);"
+     "objc.push(st, 'newMethod:withArg');"
+     "objc.push(st, '@@:@i');"
+     "objc.push(st, function(str, num) return str .. num; end);"
+     "objc.operate(st, 'addMethod')");
     [self execLuaCode:code];
 }
 
