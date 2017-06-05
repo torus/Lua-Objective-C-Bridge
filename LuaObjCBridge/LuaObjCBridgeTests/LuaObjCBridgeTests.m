@@ -109,7 +109,7 @@
      "objc.push(st, '@@:@i');"
      "objc.push(st, function(str, num) return str .. num; end);"
      "objc.operate(st, 'addMethod')"
-     "assert(ctx:wrap(objc.class.LuaObjCTest)('newMethod:withArg:', 'aho', 123) == 'aho123')");
+     "assert(ctx:wrap(objc.class.LuaObjCTest)('alloc')('init')('newMethod:withArg:', 'aho', 123) == 'aho123')");
     [self execLuaCode:code];
 }
 

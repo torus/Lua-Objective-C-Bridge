@@ -468,8 +468,24 @@ static void lua_exception_handler(NSException *exception)
     [stack addObject:cls];
 }
 
+void luaFuncIMP(id self, SEL _cmd)
+{
+    NSLog(@"_cmd = %s", sel_getName(_cmd));
+    //
+}
+
 - (void)op_addMethod:(NSMutableArray*)stack
 {
+    LuaObjectReference *func = [stack lastObject];
+    [stack removeLastObject];
+    NSString *sig = [stack lastObject];
+    [stack removeLastObject];
+    NSString *name = [stack lastObject];
+    [stack removeLastObject];
+    Class cls = [stack lastObject];
+    [stack removeLastObject];
+    class_addMethod(cls, sel_registerName([name UTF8String]), (IMP)luaFuncIMP, [sig UTF8String]);
+    // class, method name, signature, func
 }
 
 - (void)pushObject:(id)obj
