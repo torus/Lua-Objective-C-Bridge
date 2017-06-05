@@ -459,6 +459,19 @@ static void lua_exception_handler(NSException *exception)
     [stack addObject:[NSValue valueWithCGRect:rect]];
 }
 
+- (void)op_addClass:(NSMutableArray*)stack
+{
+    NSString *name = [stack lastObject];
+    [stack removeLastObject];
+    Class cls = objc_allocateClassPair([NSObject class], [name UTF8String], 0);
+    objc_registerClassPair(cls);
+    [stack addObject:cls];
+}
+
+- (void)op_addMethod:(NSMutableArray*)stack
+{
+}
+
 - (void)pushObject:(id)obj
 {
     luabridge_push_object(L, obj);

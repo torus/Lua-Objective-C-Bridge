@@ -91,7 +91,7 @@
 
 - (void)testClassDefinition {
     const char *code =
-    ("var st = objc.newstack();"
+    ("local st = objc.newstack();"
      "objc.push(st, 'MyLuaClass');"
      "objc.operate(st, 'addClass')");
     [self execLuaCode:code];
@@ -102,12 +102,14 @@
 
 - (void)testMethodDefinition {
     const char *code =
-    ("var st = objc.newstack();"
+    ("local ctx = objc.context:create();"
+     "local st = ctx.stack;"
      "objc.push(st, objc.class.LuaObjCTest);"
-     "objc.push(st, 'newMethod:withArg');"
+     "objc.push(st, 'newMethod:withArg:');"
      "objc.push(st, '@@:@i');"
      "objc.push(st, function(str, num) return str .. num; end);"
-     "objc.operate(st, 'addMethod')");
+     "objc.operate(st, 'addMethod')"
+     "assert(ctx:wrap(objc.class.LuaObjCTest)('newMethod:withArg:', 'aho', 123) == 'aho123')");
     [self execLuaCode:code];
 }
 
