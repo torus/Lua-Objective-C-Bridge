@@ -515,7 +515,7 @@ int luafunc_getclass(lua_State *L)
 static id lua_to_object(lua_State *L, int index)
 {
     id dest = nil;
- 
+
     int t = lua_type(L, index);
     switch (t) {
         case LUA_TNIL:
@@ -567,52 +567,8 @@ int luafunc_push(lua_State *L)
     int top = lua_gettop(L);
     
     NSMutableArray *arr = (__bridge NSMutableArray*)lua_topointer(L, 1);
-//    NSLog(@"arr %@", arr);
     for (int i = 2; i <= top; i ++) {
         [arr addObject:lua_to_object(L, i)];
-//        int t = lua_type(L, i);
-//        switch (t) {
-//            case LUA_TNIL:
-//                [arr addObject:[NSNull null]];
-//                break;
-//            case LUA_TNUMBER:
-//                [arr addObject:[NSNumber numberWithDouble:lua_tonumber(L, i)]];
-//                break;
-//            case LUA_TBOOLEAN:
-//                [arr addObject:[NSNumber numberWithBool:lua_toboolean(L, i)]];
-//                break;
-//            case LUA_TSTRING:
-//                [arr addObject:[NSString stringWithCString:lua_tostring(L, i) encoding:NSUTF8StringEncoding]];
-//                break;
-//            case LUA_TLIGHTUSERDATA:
-//                [arr addObject:(__bridge id)lua_topointer(L, i)];
-//                break;
-//            case LUA_TUSERDATA:
-//            {
-//                void *p = lua_touserdata(L, i);
-//                void **ptr = (void**)p;
-//                [arr addObject:(__bridge id)*ptr];
-//            }
-//                break;                
-//            case LUA_TTABLE:
-//            case LUA_TFUNCTION:
-//            case LUA_TTHREAD:
-//            {
-//                LuaObjectReference *ref = [LuaObjectReference new];
-//                ref.ref = luaL_ref(L, LUA_REGISTRYINDEX);
-//                ref.L = L;
-//                [arr addObject:ref];
-//            }
-//                break;
-//            case LUA_TNONE:
-//            default:
-//            {
-//                NSString *errmsg = [NSString stringWithFormat:@"Value type not supported. type = %d", t];
-//                lua_pushstring(L, [errmsg UTF8String]);
-//                lua_error(L);
-//            }
-//                break;
-//        }
     }
 
     return 0;
