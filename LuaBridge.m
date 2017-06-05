@@ -292,9 +292,155 @@ static void lua_exception_handler(NSException *exception)
         [inv getReturnValue:buffer];
 //        NSLog(@"ret = %c", *(unichar*)buffer);
     }
+//#define CNVBUF(type) type x = *(type*)buffer
+//    
+//    switch (rettype[0]) {
+//        case 'c': // A char
+//        {
+//            CNVBUF(char);
+//            [stack addObject:[NSNumber numberWithChar:x]];
+//        }
+//            break;
+//        case 'i': // An int
+//        {
+//            CNVBUF(int);
+//            [stack addObject:[NSNumber numberWithInt:x]];
+//        }
+//            break;
+//        case 's': // A short
+//        {
+//            CNVBUF(short);
+//            [stack addObject:[NSNumber numberWithShort:x]];
+//        }
+//            break;
+//        case 'l': // A long l is treated as a 32-bit quantity on 64-bit programs.
+//        {
+//            CNVBUF(long);
+//            [stack addObject:[NSNumber numberWithLong:x]];
+//        }
+//            break;
+//        case 'q': // A long long
+//        {
+//            CNVBUF(long long);
+//            [stack addObject:[NSNumber numberWithLong:x]];
+//        }
+//            break;
+//        case 'C': // An unsigned char
+//        {
+//            CNVBUF(unsigned char);
+//            [stack addObject:[NSNumber numberWithUnsignedChar:x]];
+//        }
+//            break;
+//        case 'I': // An unsigned int
+//        {
+//            CNVBUF(unsigned int);
+//            [stack addObject:[NSNumber numberWithUnsignedInt:x]];
+//        }
+//            break;
+//        case 'S': // An unsigned short
+//        {
+//            CNVBUF(unsigned short);
+//            [stack addObject:[NSNumber numberWithUnsignedShort:x]];
+//        }
+//            break;
+//        case 'L': // An unsigned long
+//        {
+//            CNVBUF(unsigned long);
+//            [stack addObject:[NSNumber numberWithUnsignedLong:x]];
+//        }
+//            break;
+//        case 'Q': // An unsigned long long
+//        {
+//            CNVBUF(unsigned long long);
+//            [stack addObject:[NSNumber numberWithUnsignedLongLong:x]];
+//        }
+//            break;
+//        case 'f': // A float
+//        {
+//            CNVBUF(float);
+//            [stack addObject:[NSNumber numberWithFloat:x]];
+//        }
+//            break;
+//        case 'd': // A double
+//        {
+//            CNVBUF(double);
+//            [stack addObject:[NSNumber numberWithDouble:x]];
+//        }
+//            break;
+//        case 'B': // A C++ bool or a C99 _Bool
+//        {
+//            CNVBUF(int);
+//            [stack addObject:[NSNumber numberWithBool:x]];
+//        }
+//            break;
+//            
+//        case '*': // A character string (char *)
+//        {
+//            NSString *x = [NSString stringWithCString:buffer encoding:NSUTF8StringEncoding];
+//            [stack addObject:x];
+//        }
+//            break;
+//        case '@': // An object (whether statically typed or typed id)
+//        {
+//            id x = (__bridge id)*((void **)buffer);
+////            NSLog(@"stack %@", stack);
+//            if (x) {
+////                NSLog(@"x %@", x);
+//                [stack addObject:x];
+//            } else {
+//                [stack addObject:[NSNull null]];
+//            }
+//        }
+//            break;
+//            
+//        case '^':
+//        {
+//            void *x = *(void**)buffer;
+////            [stack addObject:[PointerObject pointerWithVoidPtr:x]];
+//            [stack addObject:[NSValue valueWithPointer:x]];
+//        }
+//            break;
+//        case 'v': // A void
+//            [stack addObject:[NSNull null]];
+//            break;
+//
+//        case '{': // {name=type...} A structure
+//        {
+//            NSString *t = [NSString stringWithUTF8String:rettype];
+//            
+//            if ([t hasPrefix:@"{CGRect"]) {
+//                CGRect *rect = (CGRect*)buffer;
+//                [stack addObject:[NSValue valueWithCGRect:*rect]];
+//            } else if ([t hasPrefix:@"{CGSize"]) {
+//                CGSize *size = (CGSize*)buffer;
+//                [stack addObject:[NSValue valueWithCGSize:*size]];
+//            } else if ([t hasPrefix:@"{CGPoint"]) {
+//                CGPoint *size = (CGPoint*)buffer;
+//                [stack addObject:[NSValue valueWithCGPoint:*size]];
+//            } else if ([t hasPrefix:@"{CGAffineTransform"]) {
+//                CGAffineTransform *tran = (CGAffineTransform*)buffer;
+//                [stack addObject:[NSValue valueWithCGAffineTransform:*tran]];
+//            }
+//        }
+//            break;
+//
+//        case '#': // A class object (Class)
+//        case ':': // A method selector (SEL)
+//        default:
+//            NSLog(@"%s: Not implemented", rettype);
+//            [stack addObject:[NSNull null]];
+//            break;
+//    }
+//#undef CNVBUF
+    [[self class] pushValue:buffer withTypes:rettype toStack:stack];
+    free(buffer);
+}
+
++ (void)pushValue:(void*)buffer withTypes:(const char*)types toStack:(NSMutableArray*)stack
+{
 #define CNVBUF(type) type x = *(type*)buffer
     
-    switch (rettype[0]) {
+    switch (types[0]) {
         case 'c': // A char
         {
             CNVBUF(char);
@@ -383,9 +529,9 @@ static void lua_exception_handler(NSException *exception)
         case '@': // An object (whether statically typed or typed id)
         {
             id x = (__bridge id)*((void **)buffer);
-//            NSLog(@"stack %@", stack);
+            //            NSLog(@"stack %@", stack);
             if (x) {
-//                NSLog(@"x %@", x);
+                //                NSLog(@"x %@", x);
                 [stack addObject:x];
             } else {
                 [stack addObject:[NSNull null]];
@@ -396,17 +542,17 @@ static void lua_exception_handler(NSException *exception)
         case '^':
         {
             void *x = *(void**)buffer;
-//            [stack addObject:[PointerObject pointerWithVoidPtr:x]];
+            //            [stack addObject:[PointerObject pointerWithVoidPtr:x]];
             [stack addObject:[NSValue valueWithPointer:x]];
         }
             break;
         case 'v': // A void
             [stack addObject:[NSNull null]];
             break;
-
+            
         case '{': // {name=type...} A structure
         {
-            NSString *t = [NSString stringWithUTF8String:rettype];
+            NSString *t = [NSString stringWithUTF8String:types];
             
             if ([t hasPrefix:@"{CGRect"]) {
                 CGRect *rect = (CGRect*)buffer;
@@ -423,17 +569,15 @@ static void lua_exception_handler(NSException *exception)
             }
         }
             break;
-
+            
         case '#': // A class object (Class)
         case ':': // A method selector (SEL)
         default:
-            NSLog(@"%s: Not implemented", rettype);
+            NSLog(@"%s: Not implemented", types);
             [stack addObject:[NSNull null]];
             break;
     }
 #undef CNVBUF
-    
-    free(buffer);
 }
 
 - (NSNumber *)popNumber:(NSMutableArray*)stack
@@ -512,7 +656,7 @@ int luafunc_getclass(lua_State *L)
     return 1;
 }
 
-static id lua_to_object(lua_State *L, int index)
+static id luavalue_to_object(lua_State *L, int index)
 {
     id dest = nil;
 
@@ -568,7 +712,7 @@ int luafunc_push(lua_State *L)
     
     NSMutableArray *arr = (__bridge NSMutableArray*)lua_topointer(L, 1);
     for (int i = 2; i <= top; i ++) {
-        [arr addObject:lua_to_object(L, i)];
+        [arr addObject:luavalue_to_object(L, i)];
     }
 
     return 0;
