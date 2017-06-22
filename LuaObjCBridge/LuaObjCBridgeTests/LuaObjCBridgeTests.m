@@ -104,12 +104,15 @@
     const char *code =
     ("local ctx = objc.context:create();"
      "local st = ctx.stack;"
+     "local result = nil;"
      "objc.push(st, objc.class.LuaObjCTest);"
      "objc.push(st, 'newMethod:withArg:');"
-     "objc.push(st, '@@:@i');"
-     "objc.push(st, function(str, num) return str .. num; end);"
-     "objc.operate(st, 'addMethod')"
-     "assert(ctx:wrap(objc.class.LuaObjCTest)('alloc')('init')('newMethod:withArg:', 'aho', 123) == 'aho123')");
+     "objc.push(st, 'v@:@i');"
+     "objc.push(st, function(self, cmd, str, num) result = str .. num; print('called', self, cmd, str, num) end);"
+     "objc.operate(st, 'addMethod');"
+     "ctx:wrap(objc.class.LuaObjCTest)('alloc')('init')('newMethod:withArg:', 'aho', 123);"
+     "print('result', result);"
+     "assert(result == 'aho123.0');");
     [self execLuaCode:code];
 }
 

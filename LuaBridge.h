@@ -21,6 +21,7 @@ extern "C" {
 }
 
 @property (readonly) lua_State *L;
+@property (readonly) NSMutableDictionary *methodTable;
 
 + (LuaBridge*)instance;
 - (void)pushObject:(id)obj;

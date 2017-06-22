@@ -34,6 +34,7 @@ int finalize_object(lua_State *L)
 
 @implementation LuaBridge
 @synthesize L;
+@synthesize methodTable;
 
 - (id)init {
     self = [super init];
@@ -41,6 +42,8 @@ int finalize_object(lua_State *L)
         L = luaL_newstate();
         luaL_openlibs(L);
         lua_newtable(L);
+        
+        methodTable = [NSMutableDictionary new];
 
 #define ADDMETHOD(name) \
     (lua_pushstring(L, #name), \
@@ -468,10 +471,149 @@ static void lua_exception_handler(NSException *exception)
     [stack addObject:cls];
 }
 
-void luaFuncIMP(id self, SEL _cmd)
+void luaFuncIMP(id self, SEL _cmd, ...)
 {
     NSLog(@"_cmd = %s", sel_getName(_cmd));
     //
+    NSMethodSignature *sig = [self methodSignatureForSelector:_cmd];
+    NSUInteger num = [sig numberOfArguments];
+    va_list vl;
+    va_start(vl, _cmd);
+    
+    lua_State *L = [[LuaBridge instance] L];
+
+    LuaBridge *brdg = [LuaBridge instance];
+    Class cls = [self class];
+    LuaObjectReference *func = [brdg.methodTable valueForKey:[NSString stringWithFormat:@"%s.%s", class_getName(cls), sel_getName(_cmd)]];
+    
+    luabridge_push_object(L, func);
+
+    luabridge_push_object(L, self);
+    lua_pushstring(L, sel_getName(_cmd));
+
+    for (int i = 2; i < num; i ++) {
+        const char *t = [sig getArgumentTypeAtIndex:i];
+        NSLog(@"arg %d: %s", i, t);
+        switch (t[0]) {
+            case 'c': // A char
+            {
+                char x = va_arg(vl, char);
+                luabridge_push_object(L, [NSNumber numberWithChar:x]);
+            }
+                break;
+            case 'i': // An int
+            {
+                int x = va_arg(vl, int);
+                luabridge_push_object(L, [NSNumber numberWithInt:x]);
+            }
+                break;
+            case 's': // A short
+            {
+                short x = va_arg(vl, short);
+                luabridge_push_object(L, [NSNumber numberWithShort:x]);
+            }
+                break;
+            case 'l': // A long l is treated as a 32-bit quantity on 64-bit programs.
+            {
+                long x = va_arg(vl, long);
+                luabridge_push_object(L, [NSNumber numberWithLong:x]);
+            }
+                break;
+            case 'q': // A long long
+            {
+                long long x = va_arg(vl, long long);
+                luabridge_push_object(L, [NSNumber numberWithLongLong:x]);
+            }
+                break;
+            case 'C': // An unsigned char
+            {
+                unsigned char x = va_arg(vl, unsigned char);
+                luabridge_push_object(L, [NSNumber numberWithUnsignedChar:x]);
+            }
+                break;
+            case 'I': // An unsigned int
+            {
+                unsigned int x = va_arg(vl, unsigned int);
+                luabridge_push_object(L, [NSNumber numberWithUnsignedInt:x]);
+            }
+                break;
+            case 'S': // An unsigned short
+            {
+                unsigned short x = va_arg(vl, unsigned short);
+                luabridge_push_object(L, [NSNumber numberWithUnsignedShort:x]);
+            }
+                break;
+            case 'L': // An unsigned long
+            {
+                unsigned long x = va_arg(vl, unsigned long);
+                luabridge_push_object(L, [NSNumber numberWithUnsignedLong:x]);
+            }
+                break;
+            case 'Q': // An unsigned long long
+            {
+                unsigned long long x = va_arg(vl, unsigned long long);
+                luabridge_push_object(L, [NSNumber numberWithUnsignedLongLong:x]);
+            }
+                break;
+            case 'f': // A float
+            {
+                float x = va_arg(vl, float);
+                luabridge_push_object(L, [NSNumber numberWithFloat:x]);
+            }
+                break;
+            case 'd': // A double
+            {
+                double x = va_arg(vl, double);
+                luabridge_push_object(L, [NSNumber numberWithDouble:x]);
+            }
+                break;
+            case 'B': // A C++ bool or a C99 _Bool
+            {
+                _Bool x = va_arg(vl, _Bool);
+                luabridge_push_object(L, [NSNumber numberWithBool:x]);
+            }
+                break;
+                
+            case '*': // A character string (char *)
+            {
+                const char *x = va_arg(vl, const char *);
+                luabridge_push_object(L, [NSString stringWithUTF8String:x]);
+            }
+                break;
+
+            case '@': // An object (whether statically typed or typed id)
+            {
+                id x = va_arg(vl, id);
+                luabridge_push_object(L, x);
+            }
+                break;
+                
+            case '^': // pointer
+            {
+                void *x = va_arg(vl, void *);
+                NSValue *val = [NSValue valueWithPointer:x];
+                luabridge_push_object(L, val);
+            }
+                break;
+                
+            case '{': // {name=type...} A structure
+            case 'v': // A void
+            case '#': // A class object (Class)
+            case ':': // A method selector (SEL)
+            default:
+                NSLog(@"%s: Not implemented", t);
+                break;
+        }
+    }
+    va_end(vl);
+
+    int err = lua_pcall(L, num, 1, 0);
+    if (err) {
+        const char *mesg = lua_tostring(L, -1);
+        NSLog(@"Lua Error (%d): %s", err, mesg);
+    }
+
+
 }
 
 - (void)op_addMethod:(NSMutableArray*)stack
@@ -484,6 +626,8 @@ void luaFuncIMP(id self, SEL _cmd)
     [stack removeLastObject];
     Class cls = [stack lastObject];
     [stack removeLastObject];
+    
+    [methodTable setValue:func forKey:[NSString stringWithFormat:@"%s.%@", class_getName(cls), name]];
     class_addMethod(cls, sel_registerName([name UTF8String]), (IMP)luaFuncIMP, [sig UTF8String]);
     // class, method name, signature, func
 }
