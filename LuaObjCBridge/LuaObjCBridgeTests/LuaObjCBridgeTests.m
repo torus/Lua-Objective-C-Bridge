@@ -101,6 +101,8 @@
 }
 
 id methodImp(id self, SEL _cmd) {
+    const char *name = sel_getName(_cmd);
+    NSLog(@"called: %@, %s", self, name);
     return @"aho";
 }
 
@@ -113,23 +115,6 @@ id methodImp(id self, SEL _cmd) {
     id obj = [[cls alloc] init];
     id res = [obj performSelector:sel];
     XCTAssertEqual(res, @"aho");
-
-    NSMethodSignature *sig = [obj methodSignatureForSelector:sel];
-    XCTAssert(sig);
-    NSInvocation *inv = [NSInvocation invocationWithMethodSignature:sig];
-    [inv setSelector:sel];
-    [inv setTarget:obj];
-    [inv setArgument:&obj atIndex:0];
-    [inv setArgument:&sel atIndex:1];
-    [inv invoke];
-    
-    NSUInteger len = [[inv methodSignature] methodReturnLength];
-    void *buffer = malloc(len);
-    [inv getReturnValue:buffer];
-
-    id ret = *(const id*)buffer;
-    
-    XCTAssertEqual(ret, @"aho");
 }
 
 - (void)testMethodDefinition {
@@ -175,6 +160,30 @@ id methodImp(id self, SEL _cmd) {
     id ret = *(const id*)buffer;
 
     XCTAssert([ret isEqualToString:@"ok"]);
+}
+
+- (void)testMethodReturningInt {
+    const char *code =
+    ("local ctx = objc.context:create();"
+     "local st = ctx.stack;"
+     "objc.push(st, objc.class.LuaObjCTest);"
+     "objc.push(st, 'methodInt');"
+     "objc.push(st, 'i@:');"
+     "objc.push(st, function(self, cmd) return 9876 end);"
+     "objc.operate(st, 'addMethod');"
+     
+    /*    "local ret = ctx:wrap(objc.class.LuaObjCTest)('alloc')('init')('newMethod:withArg:', 'aho', 123);"
+     "print('result', result, ret);"*/);
+    
+    [self execLuaCode:code];
+
+    Class cls = objc_getClass("LuaObjCTest");
+    SEL sel = sel_getUid("methodInt");
+    
+    id obj = [[cls alloc] init];
+    id res = [obj performSelector:sel];
+    NSNumber *num = res;
+    XCTAssertEqual([num intValue], 9876);
 }
 
 - (void)testExample {
