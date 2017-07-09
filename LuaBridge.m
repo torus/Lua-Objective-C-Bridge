@@ -18,6 +18,7 @@
 #import "LuaBridgeInternal.h"
 
 static int gc_metatable_ref;
+static id luavalue_to_object(lua_State *L, int index);
 
 int finalize_object(lua_State *L)
 {
@@ -471,7 +472,7 @@ static void lua_exception_handler(NSException *exception)
     [stack addObject:cls];
 }
 
-void luaFuncIMP(id self, SEL _cmd, ...)
+id luaFuncIMP(id self, SEL _cmd, ...)
 {
     NSLog(@"_cmd = %s", sel_getName(_cmd));
     //
@@ -607,13 +608,16 @@ void luaFuncIMP(id self, SEL _cmd, ...)
     }
     va_end(vl);
 
+    id ret = nil;
     int err = lua_pcall(L, num, 1, 0);
     if (err) {
         const char *mesg = lua_tostring(L, -1);
         NSLog(@"Lua Error (%d): %s", err, mesg);
+    } else {
+        ret = luavalue_to_object(L, -1);
     }
 
-
+    return ret;
 }
 
 - (void)op_addMethod:(NSMutableArray*)stack
