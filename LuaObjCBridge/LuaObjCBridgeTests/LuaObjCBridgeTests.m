@@ -170,10 +170,7 @@ id methodImp(id self, SEL _cmd) {
      "objc.push(st, 'methodInt');"
      "objc.push(st, 'i@:');"
      "objc.push(st, function(self, cmd) return 9876 end);"
-     "objc.operate(st, 'addMethod');"
-     
-    /*    "local ret = ctx:wrap(objc.class.LuaObjCTest)('alloc')('init')('newMethod:withArg:', 'aho', 123);"
-     "print('result', result, ret);"*/);
+     "objc.operate(st, 'addMethod');");
     
     [self execLuaCode:code];
 
@@ -185,6 +182,24 @@ id methodImp(id self, SEL _cmd) {
     NSNumber *num = res;
     XCTAssertEqual([num intValue], 9876);
 }
+
+long methodImpReturningLong(id self, SEL _cmd) {
+    const char *name = sel_getName(_cmd);
+    NSLog(@"called: %@, %s", self, name);
+    return 1234567890;
+}
+
+- (void)testAddMethodReturningLong {
+    Class cls = objc_getClass("LuaObjCTest");
+    SEL sel = sel_getUid("testMethodReturningLong");
+    BOOL result = class_addMethod(cls, sel, (IMP)methodImpReturningLong, "l@:");
+    XCTAssert(result);
+    
+    id obj = [[cls alloc] init];
+    long res = [obj performSelector:sel];
+    XCTAssertEqual(res, 1234567890);
+}
+
 
 - (void)testExample {
     // This is an example of a functional test case.
