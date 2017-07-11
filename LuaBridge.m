@@ -492,23 +492,46 @@ id luaFuncIMP(id self, SEL _cmd, ...)
     luabridge_push_object(L, self);
     lua_pushstring(L, sel_getName(_cmd));
 
+#define NUMBERTYPE(ch, type, method) \
+case ch: \
+    { \
+        type x = va_arg(vl, type); \
+        luabridge_push_object(L, [NSNumber method:x]); \
+    } \
+    break
+
+    
     for (int i = 2; i < num; i ++) {
         const char *t = [sig getArgumentTypeAtIndex:i];
         NSLog(@"arg %d: %s", i, t);
         switch (t[0]) {
-            case 'c': // A char
+                NUMBERTYPE('c', char, numberWithChar);
+/*            case 'c': // A char
             {
                 char x = va_arg(vl, char);
                 luabridge_push_object(L, [NSNumber numberWithChar:x]);
             }
-                break;
-            case 'i': // An int
+                break;*/
+                NUMBERTYPE('i', int, numberWithInt);
+/*            case 'i': // An int
             {
                 int x = va_arg(vl, int);
                 luabridge_push_object(L, [NSNumber numberWithInt:x]);
             }
-                break;
-            case 's': // A short
+                break;*/
+                NUMBERTYPE('s', short, numberWithShort);
+                NUMBERTYPE('l', long, numberWithLong);
+                NUMBERTYPE('q', long long, numberWithLongLong);
+                NUMBERTYPE('C', unsigned char, numberWithUnsignedChar);
+                NUMBERTYPE('I', unsigned int, numberWithUnsignedInt);
+                NUMBERTYPE('S', unsigned short, numberWithUnsignedShort);
+                NUMBERTYPE('L', unsigned long, numberWithUnsignedLong);
+                NUMBERTYPE('Q', unsigned long long, numberWithUnsignedLongLong);
+                NUMBERTYPE('f', float, numberWithFloat);
+                NUMBERTYPE('d', double, numberWithDouble);
+                NUMBERTYPE('B', _Bool, numberWithBool);
+
+                /*            case 's': // A short
             {
                 short x = va_arg(vl, short);
                 luabridge_push_object(L, [NSNumber numberWithShort:x]);
@@ -574,7 +597,7 @@ id luaFuncIMP(id self, SEL _cmd, ...)
                 luabridge_push_object(L, [NSNumber numberWithBool:x]);
             }
                 break;
-                
+*/
             case '*': // A character string (char *)
             {
                 const char *x = va_arg(vl, const char *);
