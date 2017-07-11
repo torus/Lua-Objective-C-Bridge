@@ -506,19 +506,7 @@ case ch: \
         NSLog(@"arg %d: %s", i, t);
         switch (t[0]) {
                 NUMBERTYPE('c', char, numberWithChar);
-/*            case 'c': // A char
-            {
-                char x = va_arg(vl, char);
-                luabridge_push_object(L, [NSNumber numberWithChar:x]);
-            }
-                break;*/
                 NUMBERTYPE('i', int, numberWithInt);
-/*            case 'i': // An int
-            {
-                int x = va_arg(vl, int);
-                luabridge_push_object(L, [NSNumber numberWithInt:x]);
-            }
-                break;*/
                 NUMBERTYPE('s', short, numberWithShort);
                 NUMBERTYPE('l', long, numberWithLong);
                 NUMBERTYPE('q', long long, numberWithLongLong);
@@ -531,73 +519,6 @@ case ch: \
                 NUMBERTYPE('d', double, numberWithDouble);
                 NUMBERTYPE('B', _Bool, numberWithBool);
 
-                /*            case 's': // A short
-            {
-                short x = va_arg(vl, short);
-                luabridge_push_object(L, [NSNumber numberWithShort:x]);
-            }
-                break;
-            case 'l': // A long l is treated as a 32-bit quantity on 64-bit programs.
-            {
-                long x = va_arg(vl, long);
-                luabridge_push_object(L, [NSNumber numberWithLong:x]);
-            }
-                break;
-            case 'q': // A long long
-            {
-                long long x = va_arg(vl, long long);
-                luabridge_push_object(L, [NSNumber numberWithLongLong:x]);
-            }
-                break;
-            case 'C': // An unsigned char
-            {
-                unsigned char x = va_arg(vl, unsigned char);
-                luabridge_push_object(L, [NSNumber numberWithUnsignedChar:x]);
-            }
-                break;
-            case 'I': // An unsigned int
-            {
-                unsigned int x = va_arg(vl, unsigned int);
-                luabridge_push_object(L, [NSNumber numberWithUnsignedInt:x]);
-            }
-                break;
-            case 'S': // An unsigned short
-            {
-                unsigned short x = va_arg(vl, unsigned short);
-                luabridge_push_object(L, [NSNumber numberWithUnsignedShort:x]);
-            }
-                break;
-            case 'L': // An unsigned long
-            {
-                unsigned long x = va_arg(vl, unsigned long);
-                luabridge_push_object(L, [NSNumber numberWithUnsignedLong:x]);
-            }
-                break;
-            case 'Q': // An unsigned long long
-            {
-                unsigned long long x = va_arg(vl, unsigned long long);
-                luabridge_push_object(L, [NSNumber numberWithUnsignedLongLong:x]);
-            }
-                break;
-            case 'f': // A float
-            {
-                float x = va_arg(vl, float);
-                luabridge_push_object(L, [NSNumber numberWithFloat:x]);
-            }
-                break;
-            case 'd': // A double
-            {
-                double x = va_arg(vl, double);
-                luabridge_push_object(L, [NSNumber numberWithDouble:x]);
-            }
-                break;
-            case 'B': // A C++ bool or a C99 _Bool
-            {
-                _Bool x = va_arg(vl, _Bool);
-                luabridge_push_object(L, [NSNumber numberWithBool:x]);
-            }
-                break;
-*/
             case '*': // A character string (char *)
             {
                 const char *x = va_arg(vl, const char *);
