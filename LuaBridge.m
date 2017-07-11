@@ -303,8 +303,29 @@ static void lua_exception_handler(NSException *exception)
 + (void)pushValue:(void*)buffer withTypes:(const char*)types toStack:(NSMutableArray*)stack
 {
 #define CNVBUF(type) type x = *(type*)buffer
+#define NUMBERTYPE(ch, type, method) \
+case ch: \
+    { \
+        CNVBUF(type); \
+        [stack addObject:[NSNumber method:x]]; \
+    } \
+    break
     
     switch (types[0]) {
+            NUMBERTYPE('c', char, numberWithChar);
+            NUMBERTYPE('i', int, numberWithInt);
+            NUMBERTYPE('s', short, numberWithShort);
+            NUMBERTYPE('l', long, numberWithLong);
+            NUMBERTYPE('q', long long, numberWithLongLong);
+            NUMBERTYPE('C', unsigned char, numberWithUnsignedChar);
+            NUMBERTYPE('I', unsigned int, numberWithUnsignedInt);
+            NUMBERTYPE('S', unsigned short, numberWithUnsignedShort);
+            NUMBERTYPE('L', unsigned long, numberWithUnsignedLong);
+            NUMBERTYPE('Q', unsigned long long, numberWithUnsignedLongLong);
+            NUMBERTYPE('f', float, numberWithFloat);
+            NUMBERTYPE('d', double, numberWithDouble);
+            NUMBERTYPE('B', _Bool, numberWithBool);
+/*
         case 'c': // A char
         {
             CNVBUF(char);
@@ -383,7 +404,7 @@ static void lua_exception_handler(NSException *exception)
             [stack addObject:[NSNumber numberWithBool:x]];
         }
             break;
-            
+*/
         case '*': // A character string (char *)
         {
             NSString *x = [NSString stringWithCString:buffer encoding:NSUTF8StringEncoding];
@@ -442,6 +463,7 @@ static void lua_exception_handler(NSException *exception)
             break;
     }
 #undef CNVBUF
+#undef NUMBERTYPE
 }
 
 - (NSNumber *)popNumber:(NSMutableArray*)stack
@@ -550,6 +572,7 @@ case ch: \
                 break;
         }
     }
+#undef NUMBERTYPE
     va_end(vl);
 
     id ret = nil;
