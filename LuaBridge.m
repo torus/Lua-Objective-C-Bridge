@@ -20,6 +20,21 @@
 static int gc_metatable_ref;
 static id luavalue_to_object(lua_State *L, int index);
 
+#define HANDLENUMBERTYPES(F) \
+F('c', char, numberWithChar, charValue); \
+F('i', int, numberWithInt, intValue); \
+F('s', short, numberWithShort, shortValue); \
+F('l', long, numberWithLong, longValue); \
+F('q', long long, numberWithLongLong, longLongValue); \
+F('C', unsigned char, numberWithUnsignedChar, unsignedCharValue); \
+F('I', unsigned int, numberWithUnsignedInt, unsignedIntValue); \
+F('S', unsigned short, numberWithUnsignedShort, unsignedShortValue); \
+F('L', unsigned long, numberWithUnsignedLong, unsignedLongValue); \
+F('Q', unsigned long long, numberWithUnsignedLongLong, unsignedLongLongValue); \
+F('f', float, numberWithFloat, floatValue); \
+F('d', double, numberWithDouble, doubleValue); \
+F('B', _Bool, numberWithBool, boolValue)
+
 int finalize_object(lua_State *L)
 {
     void *p = lua_touserdata(L, 1);
@@ -155,28 +170,16 @@ static void lua_exception_handler(NSException *exception)
         id arg = [stack lastObject];
         [stack removeLastObject];
 
-#define NUMBERTYPE(ch, type, method) \
+#define OPCALLNUMBERTYPE(ch, type, nummethod, valmethod) \
 case ch: \
         { \
-            type x = [(NSNumber*)arg method]; \
+            type x = [(NSNumber*)arg valmethod]; \
             [inv setArgument:&x atIndex:i]; \
         } \
         break
 
         switch (t[0]) {
-                NUMBERTYPE('c', char, charValue);
-                NUMBERTYPE('i', int, intValue);
-                NUMBERTYPE('s', short, shortValue);
-                NUMBERTYPE('l', long, longValue);
-                NUMBERTYPE('q', long long, longLongValue);
-                NUMBERTYPE('C', unsigned char, unsignedCharValue);
-                NUMBERTYPE('I', unsigned int, unsignedIntValue);
-                NUMBERTYPE('S', unsigned short, unsignedShortValue);
-                NUMBERTYPE('L', unsigned long, unsignedLongValue);
-                NUMBERTYPE('Q', unsigned long long, unsignedLongLongValue);
-                NUMBERTYPE('f', float, floatValue);
-                NUMBERTYPE('d', double, doubleValue);
-                NUMBERTYPE('B', _Bool, boolValue);
+                HANDLENUMBERTYPES(OPCALLNUMBERTYPE);
 
             case '*': // A character string (char *)
             {
@@ -225,7 +228,6 @@ case ch: \
                 break;
         }
     }
-    
     [inv setTarget:target];
     [inv setSelector:sel];
     [inv invoke];
@@ -246,29 +248,16 @@ case ch: \
 + (void)pushValue:(void*)buffer withTypes:(const char*)types toStack:(NSMutableArray*)stack
 {
 #define CNVBUF(type) type x = *(type*)buffer
-#define NUMBERTYPE(ch, type, method) \
+#define PUSHNUMBERTYPE(ch, type, nummethod, valmethod) \
 case ch: \
     { \
         CNVBUF(type); \
-        [stack addObject:[NSNumber method:x]]; \
+        [stack addObject:[NSNumber nummethod:x]]; \
     } \
     break
     
     switch (types[0]) {
-            NUMBERTYPE('c', char, numberWithChar);
-            NUMBERTYPE('i', int, numberWithInt);
-            NUMBERTYPE('s', short, numberWithShort);
-            NUMBERTYPE('l', long, numberWithLong);
-            NUMBERTYPE('q', long long, numberWithLongLong);
-            NUMBERTYPE('C', unsigned char, numberWithUnsignedChar);
-            NUMBERTYPE('I', unsigned int, numberWithUnsignedInt);
-            NUMBERTYPE('S', unsigned short, numberWithUnsignedShort);
-            NUMBERTYPE('L', unsigned long, numberWithUnsignedLong);
-            NUMBERTYPE('Q', unsigned long long, numberWithUnsignedLongLong);
-            NUMBERTYPE('f', float, numberWithFloat);
-            NUMBERTYPE('d', double, numberWithDouble);
-            NUMBERTYPE('B', _Bool, numberWithBool);
-
+            HANDLENUMBERTYPES(PUSHNUMBERTYPE);
         case '*': // A character string (char *)
         {
             NSString *x = [NSString stringWithCString:buffer encoding:NSUTF8StringEncoding];
@@ -326,8 +315,6 @@ case ch: \
             [stack addObject:[NSNull null]];
             break;
     }
-#undef CNVBUF
-#undef NUMBERTYPE
 }
 
 - (NSNumber *)popNumber:(NSMutableArray*)stack
@@ -378,11 +365,11 @@ id luaFuncIMP(id self, SEL _cmd, ...)
     luabridge_push_object(L, self);
     lua_pushstring(L, sel_getName(_cmd));
 
-#define NUMBERTYPE(ch, type, method) \
+#define IMPARGNUMBERTYPE(ch, type, nummethod, valmethod) \
 case ch: \
     { \
         type x = va_arg(vl, type); \
-        luabridge_push_object(L, [NSNumber method:x]); \
+        luabridge_push_object(L, [NSNumber nummethod:x]); \
     } \
     break
 
@@ -391,19 +378,7 @@ case ch: \
         const char *t = [sig getArgumentTypeAtIndex:i];
         NSLog(@"arg %d: %s", i, t);
         switch (t[0]) {
-                NUMBERTYPE('c', char, numberWithChar);
-                NUMBERTYPE('i', int, numberWithInt);
-                NUMBERTYPE('s', short, numberWithShort);
-                NUMBERTYPE('l', long, numberWithLong);
-                NUMBERTYPE('q', long long, numberWithLongLong);
-                NUMBERTYPE('C', unsigned char, numberWithUnsignedChar);
-                NUMBERTYPE('I', unsigned int, numberWithUnsignedInt);
-                NUMBERTYPE('S', unsigned short, numberWithUnsignedShort);
-                NUMBERTYPE('L', unsigned long, numberWithUnsignedLong);
-                NUMBERTYPE('Q', unsigned long long, numberWithUnsignedLongLong);
-                NUMBERTYPE('f', float, numberWithFloat);
-                NUMBERTYPE('d', double, numberWithDouble);
-                NUMBERTYPE('B', _Bool, numberWithBool);
+                HANDLENUMBERTYPES(IMPARGNUMBERTYPE);
 
             case '*': // A character string (char *)
             {
@@ -436,7 +411,6 @@ case ch: \
                 break;
         }
     }
-#undef NUMBERTYPE
     va_end(vl);
 
     id ret = nil;
