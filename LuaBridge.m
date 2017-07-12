@@ -154,87 +154,30 @@ static void lua_exception_handler(NSException *exception)
 //        NSLog(@"arg %d: %s", i, t);
         id arg = [stack lastObject];
         [stack removeLastObject];
-        
+
+#define NUMBERTYPE(ch, type, method) \
+case ch: \
+        { \
+            type x = [(NSNumber*)arg method]; \
+            [inv setArgument:&x atIndex:i]; \
+        } \
+        break
+
         switch (t[0]) {
-            case 'c': // A char
-            {
-                char x = [(NSNumber*)arg charValue];
-                [inv setArgument:&x atIndex:i];
-            }
-                break;
-            case 'i': // An int
-            {
-                int x = [(NSNumber*)arg intValue];
-                [inv setArgument:&x atIndex:i];
-            }
-                break;
-            case 's': // A short
-            {
-                short x = [(NSNumber*)arg shortValue];
-                [inv setArgument:&x atIndex:i];
-            }
-                break;
-            case 'l': // A long l is treated as a 32-bit quantity on 64-bit programs.
-            {
-                long x = [(NSNumber*)arg longValue];
-                [inv setArgument:&x atIndex:i];
-            }
-                break;
-            case 'q': // A long long
-            {
-                long long x = [(NSNumber*)arg longLongValue];
-                [inv setArgument:&x atIndex:i];
-            }
-                break;
-            case 'C': // An unsigned char
-            {
-                unsigned char x = [(NSNumber*)arg unsignedCharValue];
-                [inv setArgument:&x atIndex:i];
-            }
-                break;
-            case 'I': // An unsigned int
-            {
-                unsigned int x = [(NSNumber*)arg unsignedIntValue];
-                [inv setArgument:&x atIndex:i];
-            }
-                break;
-            case 'S': // An unsigned short
-            {
-                unsigned short x = [(NSNumber*)arg unsignedShortValue];
-                [inv setArgument:&x atIndex:i];
-            }
-                break;
-            case 'L': // An unsigned long
-            {
-                unsigned long x = [(NSNumber*)arg unsignedLongValue];
-                [inv setArgument:&x atIndex:i];
-            }
-                break;
-            case 'Q': // An unsigned long long
-            {
-                unsigned long long x = [(NSNumber*)arg unsignedLongLongValue];
-                [inv setArgument:&x atIndex:i];
-            }
-                break;
-            case 'f': // A float
-            {
-                float x = [(NSNumber*)arg floatValue];
-                [inv setArgument:&x atIndex:i];
-            }
-                break;
-            case 'd': // A double
-            {
-                double x = [(NSNumber*)arg doubleValue];
-                [inv setArgument:&x atIndex:i];
-            }
-                break;
-            case 'B': // A C++ bool or a C99 _Bool
-            {
-                int x = [(NSNumber*)arg boolValue];
-                [inv setArgument:&x atIndex:i];
-            }
-                break;
-                
+                NUMBERTYPE('c', char, charValue);
+                NUMBERTYPE('i', int, intValue);
+                NUMBERTYPE('s', short, shortValue);
+                NUMBERTYPE('l', long, longValue);
+                NUMBERTYPE('q', long long, longLongValue);
+                NUMBERTYPE('C', unsigned char, unsignedCharValue);
+                NUMBERTYPE('I', unsigned int, unsignedIntValue);
+                NUMBERTYPE('S', unsigned short, unsignedShortValue);
+                NUMBERTYPE('L', unsigned long, unsignedLongValue);
+                NUMBERTYPE('Q', unsigned long long, unsignedLongLongValue);
+                NUMBERTYPE('f', float, floatValue);
+                NUMBERTYPE('d', double, doubleValue);
+                NUMBERTYPE('B', _Bool, boolValue);
+
             case '*': // A character string (char *)
             {
                 const char *x = [(NSString*)arg cStringUsingEncoding:NSUTF8StringEncoding];
