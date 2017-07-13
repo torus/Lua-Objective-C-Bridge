@@ -178,9 +178,8 @@ id methodImp(id self, SEL _cmd) {
     SEL sel = sel_getUid("methodInt");
     
     id obj = [[cls alloc] init];
-    id res = [obj performSelector:sel];
-    NSNumber *num = res;
-    XCTAssertEqual([num intValue], 9876);
+    int res = [obj performSelector:sel];
+    XCTAssertEqual(res, 9876);
 }
 
 long methodImpReturningLong(id self, SEL _cmd) {

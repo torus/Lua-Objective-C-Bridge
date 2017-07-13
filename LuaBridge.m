@@ -20,21 +20,6 @@
 static int gc_metatable_ref;
 static id luavalue_to_object(lua_State *L, int index);
 
-#define HANDLENUMBERTYPES(F) \
-F('c', char, numberWithChar, charValue); \
-F('i', int, numberWithInt, intValue); \
-F('s', short, numberWithShort, shortValue); \
-F('l', long, numberWithLong, longValue); \
-F('q', long long, numberWithLongLong, longLongValue); \
-F('C', unsigned char, numberWithUnsignedChar, unsignedCharValue); \
-F('I', unsigned int, numberWithUnsignedInt, unsignedIntValue); \
-F('S', unsigned short, numberWithUnsignedShort, unsignedShortValue); \
-F('L', unsigned long, numberWithUnsignedLong, unsignedLongValue); \
-F('Q', unsigned long long, numberWithUnsignedLongLong, unsignedLongLongValue); \
-F('f', float, numberWithFloat, floatValue); \
-F('d', double, numberWithDouble, doubleValue); \
-F('B', _Bool, numberWithBool, boolValue)
-
 int finalize_object(lua_State *L)
 {
     void *p = lua_touserdata(L, 1);
@@ -169,18 +154,87 @@ static void lua_exception_handler(NSException *exception)
 //        NSLog(@"arg %d: %s", i, t);
         id arg = [stack lastObject];
         [stack removeLastObject];
-
-#define OPCALLNUMBERTYPE(ch, type, nummethod, valmethod) \
-case ch: \
-        { \
-            type x = [(NSNumber*)arg valmethod]; \
-            [inv setArgument:&x atIndex:i]; \
-        } \
-        break
-
+        
         switch (t[0]) {
-                HANDLENUMBERTYPES(OPCALLNUMBERTYPE);
-
+            case 'c': // A char
+            {
+                char x = [(NSNumber*)arg charValue];
+                [inv setArgument:&x atIndex:i];
+            }
+                break;
+            case 'i': // An int
+            {
+                int x = [(NSNumber*)arg intValue];
+                [inv setArgument:&x atIndex:i];
+            }
+                break;
+            case 's': // A short
+            {
+                short x = [(NSNumber*)arg shortValue];
+                [inv setArgument:&x atIndex:i];
+            }
+                break;
+            case 'l': // A long l is treated as a 32-bit quantity on 64-bit programs.
+            {
+                long x = [(NSNumber*)arg longValue];
+                [inv setArgument:&x atIndex:i];
+            }
+                break;
+            case 'q': // A long long
+            {
+                long long x = [(NSNumber*)arg longLongValue];
+                [inv setArgument:&x atIndex:i];
+            }
+                break;
+            case 'C': // An unsigned char
+            {
+                unsigned char x = [(NSNumber*)arg unsignedCharValue];
+                [inv setArgument:&x atIndex:i];
+            }
+                break;
+            case 'I': // An unsigned int
+            {
+                unsigned int x = [(NSNumber*)arg unsignedIntValue];
+                [inv setArgument:&x atIndex:i];
+            }
+                break;
+            case 'S': // An unsigned short
+            {
+                unsigned short x = [(NSNumber*)arg unsignedShortValue];
+                [inv setArgument:&x atIndex:i];
+            }
+                break;
+            case 'L': // An unsigned long
+            {
+                unsigned long x = [(NSNumber*)arg unsignedLongValue];
+                [inv setArgument:&x atIndex:i];
+            }
+                break;
+            case 'Q': // An unsigned long long
+            {
+                unsigned long long x = [(NSNumber*)arg unsignedLongLongValue];
+                [inv setArgument:&x atIndex:i];
+            }
+                break;
+            case 'f': // A float
+            {
+                float x = [(NSNumber*)arg floatValue];
+                [inv setArgument:&x atIndex:i];
+            }
+                break;
+            case 'd': // A double
+            {
+                double x = [(NSNumber*)arg doubleValue];
+                [inv setArgument:&x atIndex:i];
+            }
+                break;
+            case 'B': // A C++ bool or a C99 _Bool
+            {
+                int x = [(NSNumber*)arg boolValue];
+                [inv setArgument:&x atIndex:i];
+            }
+                break;
+                
             case '*': // A character string (char *)
             {
                 const char *x = [(NSString*)arg cStringUsingEncoding:NSUTF8StringEncoding];
@@ -228,6 +282,7 @@ case ch: \
                 break;
         }
     }
+    
     [inv setTarget:target];
     [inv setSelector:sel];
     [inv invoke];
@@ -248,16 +303,87 @@ case ch: \
 + (void)pushValue:(void*)buffer withTypes:(const char*)types toStack:(NSMutableArray*)stack
 {
 #define CNVBUF(type) type x = *(type*)buffer
-#define PUSHNUMBERTYPE(ch, type, nummethod, valmethod) \
-case ch: \
-    { \
-        CNVBUF(type); \
-        [stack addObject:[NSNumber nummethod:x]]; \
-    } \
-    break
     
     switch (types[0]) {
-            HANDLENUMBERTYPES(PUSHNUMBERTYPE);
+        case 'c': // A char
+        {
+            CNVBUF(char);
+            [stack addObject:[NSNumber numberWithChar:x]];
+        }
+            break;
+        case 'i': // An int
+        {
+            CNVBUF(int);
+            [stack addObject:[NSNumber numberWithInt:x]];
+        }
+            break;
+        case 's': // A short
+        {
+            CNVBUF(short);
+            [stack addObject:[NSNumber numberWithShort:x]];
+        }
+            break;
+        case 'l': // A long l is treated as a 32-bit quantity on 64-bit programs.
+        {
+            CNVBUF(long);
+            [stack addObject:[NSNumber numberWithLong:x]];
+        }
+            break;
+        case 'q': // A long long
+        {
+            CNVBUF(long long);
+            [stack addObject:[NSNumber numberWithLong:x]];
+        }
+            break;
+        case 'C': // An unsigned char
+        {
+            CNVBUF(unsigned char);
+            [stack addObject:[NSNumber numberWithUnsignedChar:x]];
+        }
+            break;
+        case 'I': // An unsigned int
+        {
+            CNVBUF(unsigned int);
+            [stack addObject:[NSNumber numberWithUnsignedInt:x]];
+        }
+            break;
+        case 'S': // An unsigned short
+        {
+            CNVBUF(unsigned short);
+            [stack addObject:[NSNumber numberWithUnsignedShort:x]];
+        }
+            break;
+        case 'L': // An unsigned long
+        {
+            CNVBUF(unsigned long);
+            [stack addObject:[NSNumber numberWithUnsignedLong:x]];
+        }
+            break;
+        case 'Q': // An unsigned long long
+        {
+            CNVBUF(unsigned long long);
+            [stack addObject:[NSNumber numberWithUnsignedLongLong:x]];
+        }
+            break;
+        case 'f': // A float
+        {
+            CNVBUF(float);
+            [stack addObject:[NSNumber numberWithFloat:x]];
+        }
+            break;
+        case 'd': // A double
+        {
+            CNVBUF(double);
+            [stack addObject:[NSNumber numberWithDouble:x]];
+        }
+            break;
+        case 'B': // A C++ bool or a C99 _Bool
+        {
+            CNVBUF(int);
+            [stack addObject:[NSNumber numberWithBool:x]];
+        }
+            break;
+            
         case '*': // A character string (char *)
         {
             NSString *x = [NSString stringWithCString:buffer encoding:NSUTF8StringEncoding];
@@ -315,6 +441,7 @@ case ch: \
             [stack addObject:[NSNull null]];
             break;
     }
+#undef CNVBUF
 }
 
 - (NSNumber *)popNumber:(NSMutableArray*)stack
@@ -365,11 +492,11 @@ id luaFuncIMP(id self, SEL _cmd, ...)
     luabridge_push_object(L, self);
     lua_pushstring(L, sel_getName(_cmd));
 
-#define IMPARGNUMBERTYPE(ch, type, nummethod, valmethod) \
+#define NUMBERTYPE(ch, type, method) \
 case ch: \
     { \
         type x = va_arg(vl, type); \
-        luabridge_push_object(L, [NSNumber nummethod:x]); \
+        luabridge_push_object(L, [NSNumber method:x]); \
     } \
     break
 
@@ -378,8 +505,87 @@ case ch: \
         const char *t = [sig getArgumentTypeAtIndex:i];
         NSLog(@"arg %d: %s", i, t);
         switch (t[0]) {
-                HANDLENUMBERTYPES(IMPARGNUMBERTYPE);
-
+                NUMBERTYPE('c', char, numberWithChar);
+/*            case 'c': // A char
+            {
+                char x = va_arg(vl, char);
+                luabridge_push_object(L, [NSNumber numberWithChar:x]);
+            }
+                break;*/
+                NUMBERTYPE('i', int, numberWithInt);
+/*            case 'i': // An int
+            {
+                int x = va_arg(vl, int);
+                luabridge_push_object(L, [NSNumber numberWithInt:x]);
+            }
+                break;*/
+            case 's': // A short
+            {
+                short x = va_arg(vl, short);
+                luabridge_push_object(L, [NSNumber numberWithShort:x]);
+            }
+                break;
+            case 'l': // A long l is treated as a 32-bit quantity on 64-bit programs.
+            {
+                long x = va_arg(vl, long);
+                luabridge_push_object(L, [NSNumber numberWithLong:x]);
+            }
+                break;
+            case 'q': // A long long
+            {
+                long long x = va_arg(vl, long long);
+                luabridge_push_object(L, [NSNumber numberWithLongLong:x]);
+            }
+                break;
+            case 'C': // An unsigned char
+            {
+                unsigned char x = va_arg(vl, unsigned char);
+                luabridge_push_object(L, [NSNumber numberWithUnsignedChar:x]);
+            }
+                break;
+            case 'I': // An unsigned int
+            {
+                unsigned int x = va_arg(vl, unsigned int);
+                luabridge_push_object(L, [NSNumber numberWithUnsignedInt:x]);
+            }
+                break;
+            case 'S': // An unsigned short
+            {
+                unsigned short x = va_arg(vl, unsigned short);
+                luabridge_push_object(L, [NSNumber numberWithUnsignedShort:x]);
+            }
+                break;
+            case 'L': // An unsigned long
+            {
+                unsigned long x = va_arg(vl, unsigned long);
+                luabridge_push_object(L, [NSNumber numberWithUnsignedLong:x]);
+            }
+                break;
+            case 'Q': // An unsigned long long
+            {
+                unsigned long long x = va_arg(vl, unsigned long long);
+                luabridge_push_object(L, [NSNumber numberWithUnsignedLongLong:x]);
+            }
+                break;
+            case 'f': // A float
+            {
+                float x = va_arg(vl, float);
+                luabridge_push_object(L, [NSNumber numberWithFloat:x]);
+            }
+                break;
+            case 'd': // A double
+            {
+                double x = va_arg(vl, double);
+                luabridge_push_object(L, [NSNumber numberWithDouble:x]);
+            }
+                break;
+            case 'B': // A C++ bool or a C99 _Bool
+            {
+                _Bool x = va_arg(vl, _Bool);
+                luabridge_push_object(L, [NSNumber numberWithBool:x]);
+            }
+                break;
+                
             case '*': // A character string (char *)
             {
                 const char *x = va_arg(vl, const char *);
