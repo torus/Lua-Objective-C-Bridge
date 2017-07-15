@@ -182,6 +182,38 @@ id methodImp(id self, SEL _cmd) {
     XCTAssertEqual(res, 9876);
 }
 
+- (void)testMethodReturningFloat {
+    const char *code =
+    ("local ctx = objc.context:create();"
+     "local st = ctx.stack;"
+     "objc.push(st, objc.class.LuaObjCTest);"
+     "objc.push(st, 'methodFloat');"
+     "objc.push(st, 'f@:');"
+     "objc.push(st, function(self, cmd) return -9.876 end);"
+     "objc.operate(st, 'addMethod');");
+    
+    [self execLuaCode:code];
+    
+    Class cls = objc_getClass("LuaObjCTest");
+    SEL sel = sel_getUid("methodFloat");
+    id target = [[cls alloc] init];
+    
+    NSMethodSignature *sig = [target methodSignatureForSelector:sel];
+    XCTAssert(sig);
+    NSInvocation *inv = [NSInvocation invocationWithMethodSignature:sig];
+    [inv setSelector:sel];
+    [inv setTarget:target];
+    [inv invoke];
+    
+    NSUInteger len = [[inv methodSignature] methodReturnLength];
+    void *buffer = malloc(len);
+    [inv getReturnValue:buffer];
+    
+    float ret = *(float*)buffer;
+    
+    XCTAssertEqualWithAccuracy(ret, -9.876, 0.001);
+}
+
 long methodImpReturningLong(id self, SEL _cmd) {
     const char *name = sel_getName(_cmd);
     NSLog(@"called: %@, %s", self, name);

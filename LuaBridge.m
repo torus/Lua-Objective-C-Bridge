@@ -425,8 +425,8 @@ case ch: \
     return ret;
 }
 
-#define DEFINE_LUAFUNCIMP(rettype, luafunc)                             \
-rettype luaFuncIMP_ ## rettype(id self, SEL _cmd, ...)                  \
+#define DEFINE_LUAFUNCIMP(rettype, disptype, luafunc)                   \
+rettype luaFuncIMP_ ## disptype(id self, SEL _cmd, ...)                 \
 {                                                                       \
     NSLog(@"_cmd = %s", sel_getName(_cmd));                             \
                                                                         \
@@ -498,7 +498,20 @@ rettype luaFuncIMP_ ## rettype(id self, SEL _cmd, ...)                  \
     return ret;                                                         \
 }
 
-DEFINE_LUAFUNCIMP(int, lua_tointeger)
+DEFINE_LUAFUNCIMP(char, char, lua_tointeger)
+DEFINE_LUAFUNCIMP(int, int, lua_tointeger)
+DEFINE_LUAFUNCIMP(short, short, lua_tointeger)
+DEFINE_LUAFUNCIMP(long, long, lua_tointeger)
+DEFINE_LUAFUNCIMP(long long, longLong, lua_tointeger)
+DEFINE_LUAFUNCIMP(unsigned char, unsignedChar, lua_tointeger)
+DEFINE_LUAFUNCIMP(unsigned int, unsignedInt, lua_tointeger)
+DEFINE_LUAFUNCIMP(unsigned short, unsignedShort, lua_tointeger)
+DEFINE_LUAFUNCIMP(unsigned long, unsignedLong, lua_tointeger)
+DEFINE_LUAFUNCIMP(unsigned long long, unsignedLongLong, lua_tointeger)
+DEFINE_LUAFUNCIMP(float, float, lua_tonumber)
+DEFINE_LUAFUNCIMP(double, double, lua_tonumber)
+DEFINE_LUAFUNCIMP(_Bool, Bool, lua_tointeger)
+DEFINE_LUAFUNCIMP(const char *, cstr, lua_tostring)
 
 - (void)op_addMethod:(NSMutableArray*)stack
 {
@@ -513,17 +526,31 @@ DEFINE_LUAFUNCIMP(int, lua_tointeger)
     
     [methodTable setValue:func forKey:[NSString stringWithFormat:@"%s.%@", class_getName(cls), name]];
     const char *sigstr = [sig UTF8String];
-    
+
+    IMP imp;
     switch (sigstr[0]) {
-        case 'i':
-            class_addMethod(cls, sel_registerName([name UTF8String]), (IMP)luaFuncIMP_int, sigstr);
-            break;
-            
-        case '@':
+        case 'c': imp = (IMP)luaFuncIMP_char; break;
+        case 'i': imp = (IMP)luaFuncIMP_int; break;
+        case 's': imp = (IMP)luaFuncIMP_short; break;
+        case 'l': imp = (IMP)luaFuncIMP_long; break;
+        case 'q': imp = (IMP)luaFuncIMP_longLong; break;
+        case 'C': imp = (IMP)luaFuncIMP_unsignedChar; break;
+        case 'I': imp = (IMP)luaFuncIMP_unsignedInt; break;
+        case 'S': imp = (IMP)luaFuncIMP_unsignedShort; break;
+        case 'L': imp = (IMP)luaFuncIMP_unsignedLong; break;
+        case 'Q': imp = (IMP)luaFuncIMP_unsignedLongLong; break;
+        case 'f': imp = (IMP)luaFuncIMP_float; break;
+        case 'd': imp = (IMP)luaFuncIMP_double; break;
+        case 'B': imp = (IMP)luaFuncIMP_Bool; break;
+        case 'v': imp = (IMP)luaFuncIMP_int; break; // return value ignored
+        case '*': imp = (IMP)luaFuncIMP_cstr; break;
+        case '@': imp = (IMP)luaFuncIMP_id; break;
         default:
-            class_addMethod(cls, sel_registerName([name UTF8String]), (IMP)luaFuncIMP_id, sigstr);
+            imp = (IMP)luaFuncIMP_int;
             break;
     }
+
+    class_addMethod(cls, sel_registerName([name UTF8String]), (IMP)imp, sigstr);
 }
 
 - (void)pushObject:(id)obj
