@@ -73,6 +73,7 @@ int finalize_object(lua_State *L)
         ADDMETHOD(clear);
         ADDMETHOD(operate);
         ADDMETHOD(getclass);
+        ADDMETHOD(getprotocol);
         ADDMETHOD(extract);
 
         lua_setglobal(L, "objc");
@@ -555,6 +556,16 @@ DEFINE_LUAFUNCIMP(const char *, cstr, lua_tostring)
     class_addMethod(cls, sel_registerName([name UTF8String]), (IMP)imp, sigstr);
 }
 
+- (void)op_addProtocol:(NSMutableArray*)stack
+{
+    Protocol *proto = [stack lastObject];
+    [stack removeLastObject];
+    Class cls = [stack lastObject];
+    [stack removeLastObject];
+    
+    class_addProtocol(cls, proto);
+}
+
 - (void)pushObject:(id)obj
 {
     luabridge_push_object(L, obj);
@@ -604,10 +615,19 @@ int luafunc_newstack(lua_State *L)
     
     return 1;
 }
+
 int luafunc_getclass(lua_State *L)
 {
     const char *classname = lua_tostring(L, -1);
     id cls = objc_getClass(classname);
+    lua_pushlightuserdata(L, (__bridge void *)(cls));
+    return 1;
+}
+
+int luafunc_getprotocol(lua_State *L)
+{
+    const char *classname = lua_tostring(L, -1);
+    id cls = objc_getProtocol(classname);
     lua_pushlightuserdata(L, (__bridge void *)(cls));
     return 1;
 }
