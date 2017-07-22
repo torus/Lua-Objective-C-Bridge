@@ -338,9 +338,11 @@ case ch: \
 
 - (void)op_addClass:(NSMutableArray*)stack
 {
+    Class superClass = [stack lastObject];
+    [stack removeLastObject];
     NSString *name = [stack lastObject];
     [stack removeLastObject];
-    Class cls = objc_allocateClassPair([NSObject class], [name UTF8String], 0);
+    Class cls = objc_allocateClassPair(superClass, [name UTF8String], 0);
     objc_registerClassPair(cls);
     [stack addObject:cls];
 }

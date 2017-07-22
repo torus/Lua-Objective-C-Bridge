@@ -93,6 +93,7 @@
     const char *code =
     ("local st = objc.newstack();"
      "objc.push(st, 'MyLuaClass');"
+     "objc.push(st, objc.class.NSObject);"
      "objc.operate(st, 'addClass')");
     [self execLuaCode:code];
     
