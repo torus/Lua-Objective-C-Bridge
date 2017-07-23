@@ -39,6 +39,60 @@
     XCTAssert(self.L);
 }
 
+int varargtest_int(int n, ...) {
+    int dest = 0;
+    
+    va_list vl;
+    va_start(vl, n);
+    for (int i = 0; i < n; i ++) {
+        int v = va_arg(vl, int);
+        dest += v;
+    }
+    va_end(vl);
+    return dest;
+}
+
+- (void)testVarargsInt {
+    int ret = varargtest_int(3, 10, 100, 1000);
+    XCTAssertEqual(ret, 1110);
+}
+
+int vaargtest_ptr(int n, ...) {
+    va_list vl;
+    va_start(vl, n);
+    
+    void *ptr = va_arg(vl, void*);
+    void *ptr2 = va_arg(vl, void*);
+    
+    va_end(vl);
+    
+    int dest = ((char*) ptr2) - ((char*) ptr);
+    return dest;
+}
+
+- (void)testVarargsPointer {
+    const char *str = "konnichiwa";
+    int ret = vaargtest_ptr(1, (void*)str, (void*)(str + 5));
+    XCTAssertEqual(ret, 5);
+}
+
+id varargtest_id(int n, ...) {
+    va_list vl;
+    va_start(vl, n);
+    
+    void *p = va_arg(vl, void*);
+    id x = (__bridge id)p;
+    NSLog(@"%@", x);
+    
+    return x;
+}
+
+- (void)testVargargsId {
+    NSString *str = @"ahoaho";
+    id ret = varargtest_id(1, str);
+    NSLog(@"%@", ret);
+}
+
 - (void)execLuaCode: (const char*)code {
     int fail = luaL_dostring(self.L, code);
     XCTAssertFalse(fail);
