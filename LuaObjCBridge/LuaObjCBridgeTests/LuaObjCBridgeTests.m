@@ -103,6 +103,30 @@ id varargtest_id(int n, ...) {
     }
 }
 
+- (void)testInvocation {
+    NSString *str = @"hoge";
+    SEL sel = @selector(stringByAppendingString:);
+    NSInvocation *inv = [NSInvocation invocationWithMethodSignature: [str methodSignatureForSelector:sel]];
+    
+    NSString *str2 = @"fuga";
+    inv.target = str;
+    inv.selector = sel;
+    
+    [inv setArgument:&str2 atIndex:2];
+    [inv invoke];
+
+    NSUInteger len = [[inv methodSignature] methodReturnLength];
+    void *buffer = malloc(len);
+    [inv getReturnValue:buffer];
+
+    void *ptr = *(void**)buffer;
+    NSString *result = (__bridge NSString*)ptr;
+
+    XCTAssert([result isEqualToString:@"hogefuga"]);
+}
+
+
+
 - (void)testNumber {
     const char *code = "return 0.125";
     [self execLuaCode:code];
@@ -194,12 +218,9 @@ id methodImp(id self, SEL _cmd) {
      "local result = nil;"
      "objc.push(st, objc.class.LuaObjCTest);"
      "objc.push(st, 'newMethod:withArg:');"
-     "objc.push(st, '@@:@i');"
-     "objc.push(st, function(self, cmd, str, num) result = str .. num; print('called', self, cmd, str, num); return 'ok'; end);"
-     "objc.operate(st, 'addMethod');"
-
-/*    "local ret = ctx:wrap(objc.class.LuaObjCTest)('alloc')('init')('newMethod:withArg:', 'aho', 123);"
-    "print('result', result, ret);"*/);
+     "objc.push(st, '@@:l@');"
+     "objc.push(st, function(self, cmd, num, str) print('called', self, cmd, str, num); result = str .. num; return 'ok'; end);"
+     "objc.operate(st, 'addMethod');");
 
     [self execLuaCode:code];
 
@@ -212,15 +233,23 @@ id methodImp(id self, SEL _cmd) {
     
     NSMethodSignature *sig = [target methodSignatureForSelector:sel];
     XCTAssert(sig);
+
     NSInvocation *inv = [NSInvocation invocationWithMethodSignature:sig];
-    [inv setSelector:sel];
-    [inv setTarget:target];
-    [inv setArgument:&target atIndex:0];
-    [inv setArgument:&sel atIndex:1];
+    inv.selector = sel;
+    inv.target = target;
+
+    long numarg = 1234;
+    [inv setArgument:&numarg atIndex:2];
+
     NSString *str = @"ahoaho";
-    [inv setArgument:&str atIndex:2];
-    int numarg = 1234;
-    [inv setArgument:&numarg atIndex:3];
+    NSLog(@"str: %p", str);
+    [inv setArgument:&str atIndex:3];
+
+    long outp;
+    [inv getArgument:&outp atIndex:2];
+    void *outstr;
+    [inv getArgument:&outstr atIndex:3];
+    NSLog(@"arg2: %ld, arg3: %p", outp, outstr);
     [inv invoke];
 
     NSUInteger len = [[inv methodSignature] methodReturnLength];

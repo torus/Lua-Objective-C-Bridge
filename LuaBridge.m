@@ -392,7 +392,9 @@ case ch: \
 
             case '@': // An object (whether statically typed or typed id)
             {
-                id x = va_arg(vl, id);
+                void *ptr = va_arg(vl, void*);
+                NSLog(@"@ pointer: %p", ptr);
+                id x = (__bridge id)ptr;
                 luabridge_push_object(L, x);
             }
                 break;
