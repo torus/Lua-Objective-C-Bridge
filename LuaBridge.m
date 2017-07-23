@@ -356,7 +356,12 @@ id luaFuncIMP_id(id self, SEL _cmd, ...)
     NSUInteger num = [sig numberOfArguments];
     va_list vl;
     va_start(vl, _cmd);
-    
+
+    const unsigned char *p = (const unsigned char*)vl - 32;
+    for (int i = 0; i < 64; i += 4) {
+        NSLog(@"args: %02x%02x%02x%02x", p[i], p[i + 1], p[i + 2], p[i + 3]);
+    }
+
     lua_State *L = [[LuaBridge instance] L];
 
     LuaBridge *brdg = [LuaBridge instance];

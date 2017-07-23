@@ -76,7 +76,7 @@ int vaargtest_ptr(int n, ...) {
     XCTAssertEqual(ret, 5);
 }
 
-id varargtest_id(int n, ...) {
+id varargtest_id(id self, SEL _cmd, int n, ...) {
     va_list vl;
     va_start(vl, n);
     
@@ -89,7 +89,7 @@ id varargtest_id(int n, ...) {
 
 - (void)testVargargsId {
     NSString *str = @"ahoaho";
-    id ret = varargtest_id(1, str);
+    id ret = varargtest_id(str, @selector(testVargargsId), 1, str);
     NSLog(@"%@", ret);
 }
 
@@ -125,7 +125,35 @@ id varargtest_id(int n, ...) {
     XCTAssert([result isEqualToString:@"hogefuga"]);
 }
 
+- (void)testMethodCall {
+    Class cls = objc_getClass("LuaObjCTest");
+    SEL sel = @selector(varargtest:obj:);
+    class_addMethod(cls, sel, (IMP)varargtest_id, "@@:i@");
+    
+    id target = [[cls alloc] init];
+    
+    NSInvocation *inv = [NSInvocation invocationWithMethodSignature: [target methodSignatureForSelector:sel]];
+    
+    inv.target = target;
+    inv.selector = sel;
 
+    int arg1 = 1;
+    [inv setArgument:&arg1 atIndex:2];
+    
+    NSString *arg2 = @"arg2 string";
+    [inv setArgument:&arg2 atIndex:3];
+    
+    [inv invoke];
+    
+    NSUInteger len = [[inv methodSignature] methodReturnLength];
+    void *buffer = malloc(len);
+    [inv getReturnValue:buffer];
+    
+    void *ptr = *(void**)buffer;
+    NSString *result = (__bridge NSString*)ptr;
+    
+    XCTAssert([result isEqualToString:@"arg2 string"]);
+}
 
 - (void)testNumber {
     const char *code = "return 0.125";
@@ -238,18 +266,18 @@ id methodImp(id self, SEL _cmd) {
     inv.selector = sel;
     inv.target = target;
 
-    long numarg = 1234;
+    long numarg = 1234l;
     [inv setArgument:&numarg atIndex:2];
 
     NSString *str = @"ahoaho";
     NSLog(@"str: %p", str);
     [inv setArgument:&str atIndex:3];
 
-    long outp;
-    [inv getArgument:&outp atIndex:2];
-    void *outstr;
-    [inv getArgument:&outstr atIndex:3];
-    NSLog(@"arg2: %ld, arg3: %p", outp, outstr);
+    long *outp = malloc(sizeof(long));
+    [inv getArgument:outp atIndex:2];
+    void **outstr = malloc(sizeof(void*));
+    [inv getArgument:outstr atIndex:3];
+    NSLog(@"arg2: %ld, arg3: %p", *outp, *outstr);
     [inv invoke];
 
     NSUInteger len = [[inv methodSignature] methodReturnLength];
