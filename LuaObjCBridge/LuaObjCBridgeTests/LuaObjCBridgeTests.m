@@ -76,20 +76,40 @@ int vaargtest_ptr(int n, ...) {
     XCTAssertEqual(ret, 5);
 }
 
-id varargtest_id(id self, SEL _cmd, int n, ...) {
-    va_list vl;
-    va_start(vl, n);
-    
-    void *p = va_arg(vl, void*);
-    id x = (__bridge id)p;
-    NSLog(@"%@", x);
+#ifdef __LP64__
+id varargtest_id(id self, SEL _cmd, void *arg1, void *arg2) {
+    int n = (int)arg1;
+    NSLog(@"n: %x", n);
+
+    void *ptr = arg2;
+    id x = (__bridge id)ptr;
+    NSLog(@"str: %p, %@", ptr, x);
     
     return x;
 }
+#else
+id varargtest_id(id self, SEL _cmd, ...) {
+    va_list vl;
+    va_start(vl, _cmd);
+    
+    const unsigned char *p = (const unsigned char*)vl;
+    for (int i = -32; i < 32; i += 8) {
+        NSLog(@"%03d: %02x%02x%02x%02x%02x%02x%02x%02x", i, p[i], p[i + 1], p[i + 2], p[i + 3], p[i + 4], p[i + 5], p[i + 6], p[i + 7]);
+    }
+
+    int n = va_arg(vl, int);
+    NSLog(@"n: %x", n);
+    void *ptr = va_arg(vl, void*);
+    id x = (__bridge id)ptr;
+    NSLog(@"str: %p, %@", ptr, x);
+    
+    return x;
+}
+#endif
 
 - (void)testVargargsId {
     NSString *str = @"ahoaho";
-    id ret = varargtest_id(str, @selector(testVargargsId), 1, str);
+    id ret = varargtest_id(str, @selector(testVargargsId), (void*)0xdeadbeef, (__bridge void*)str);
     NSLog(@"%@", ret);
 }
 
@@ -137,7 +157,7 @@ id varargtest_id(id self, SEL _cmd, int n, ...) {
     inv.target = target;
     inv.selector = sel;
 
-    int arg1 = 1;
+    int arg1 = 0xc001cafe;
     [inv setArgument:&arg1 atIndex:2];
     
     NSString *arg2 = @"arg2 string";
@@ -266,7 +286,7 @@ id methodImp(id self, SEL _cmd) {
     inv.selector = sel;
     inv.target = target;
 
-    long numarg = 1234l;
+    long numarg = 0x0ff1ce;
     [inv setArgument:&numarg atIndex:2];
 
     NSString *str = @"ahoaho";

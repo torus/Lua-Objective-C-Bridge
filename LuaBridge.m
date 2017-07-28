@@ -20,20 +20,20 @@
 static int gc_metatable_ref;
 static id luavalue_to_object(lua_State *L, int index);
 
-#define HANDLENUMBERTYPES(F) \
-F('c', char, numberWithChar, charValue); \
-F('i', int, numberWithInt, intValue); \
-F('s', short, numberWithShort, shortValue); \
-F('l', long, numberWithLong, longValue); \
-F('q', long long, numberWithLongLong, longLongValue); \
-F('C', unsigned char, numberWithUnsignedChar, unsignedCharValue); \
-F('I', unsigned int, numberWithUnsignedInt, unsignedIntValue); \
-F('S', unsigned short, numberWithUnsignedShort, unsignedShortValue); \
-F('L', unsigned long, numberWithUnsignedLong, unsignedLongValue); \
-F('Q', unsigned long long, numberWithUnsignedLongLong, unsignedLongLongValue); \
-F('f', float, numberWithFloat, floatValue); \
-F('d', double, numberWithDouble, doubleValue); \
-F('B', _Bool, numberWithBool, boolValue)
+#define HANDLENUMBERTYPES(F, index)            \
+F('c', char, numberWithChar, charValue, index); \
+F('i', int, numberWithInt, intValue, index); \
+F('s', short, numberWithShort, shortValue, index); \
+F('l', long, numberWithLong, longValue, index); \
+F('q', long long, numberWithLongLong, longLongValue, index); \
+F('C', unsigned char, numberWithUnsignedChar, unsignedCharValue, index); \
+F('I', unsigned int, numberWithUnsignedInt, unsignedIntValue, index); \
+F('S', unsigned short, numberWithUnsignedShort, unsignedShortValue, index); \
+F('L', unsigned long, numberWithUnsignedLong, unsignedLongValue, index); \
+F('Q', unsigned long long, numberWithUnsignedLongLong, unsignedLongLongValue, index); \
+F('f', float, numberWithFloat, floatValue, index); \
+F('d', double, numberWithDouble, doubleValue, index); \
+F('B', _Bool, numberWithBool, boolValue, index)
 
 int finalize_object(lua_State *L)
 {
@@ -171,7 +171,7 @@ static void lua_exception_handler(NSException *exception)
         id arg = [stack lastObject];
         [stack removeLastObject];
 
-#define OPCALLNUMBERTYPE(ch, type, nummethod, valmethod) \
+#define OPCALLNUMBERTYPE(ch, type, nummethod, valmethod, _) \
 case ch: \
         { \
             type x = [(NSNumber*)arg valmethod]; \
@@ -180,7 +180,7 @@ case ch: \
         break
 
         switch (t[0]) {
-                HANDLENUMBERTYPES(OPCALLNUMBERTYPE);
+          HANDLENUMBERTYPES(OPCALLNUMBERTYPE, 0);
 
             case '*': // A character string (char *)
             {
@@ -249,7 +249,7 @@ case ch: \
 + (void)pushValue:(void*)buffer withTypes:(const char*)types toStack:(NSMutableArray*)stack
 {
 #define CNVBUF(type) type x = *(type*)buffer
-#define PUSHNUMBERTYPE(ch, type, nummethod, valmethod) \
+#define PUSHNUMBERTYPE(ch, type, nummethod, valmethod, index) \
 case ch: \
     { \
         CNVBUF(type); \
@@ -258,7 +258,7 @@ case ch: \
     break
     
     switch (types[0]) {
-            HANDLENUMBERTYPES(PUSHNUMBERTYPE);
+      HANDLENUMBERTYPES(PUSHNUMBERTYPE, 0);
         case '*': // A character string (char *)
         {
             NSString *x = [NSString stringWithCString:buffer encoding:NSUTF8StringEncoding];
@@ -348,96 +348,56 @@ case ch: \
     [stack addObject:cls];
 }
 
-id luaFuncIMP_id(id self, SEL _cmd, ...)
-{
-    NSLog(@"_cmd = %s", sel_getName(_cmd));
-    //
-    NSMethodSignature *sig = [self methodSignatureForSelector:_cmd];
-    NSUInteger num = [sig numberOfArguments];
-    va_list vl;
-    va_start(vl, _cmd);
-
-    const unsigned char *p = (const unsigned char*)vl - 32;
-    for (int i = 0; i < 64; i += 4) {
-        NSLog(@"args: %02x%02x%02x%02x", p[i], p[i + 1], p[i + 2], p[i + 3]);
-    }
-
-    lua_State *L = [[LuaBridge instance] L];
-
-    LuaBridge *brdg = [LuaBridge instance];
-    Class cls = [self class];
-    LuaObjectReference *func = [brdg.methodTable valueForKey:[NSString stringWithFormat:@"%s.%s", class_getName(cls), sel_getName(_cmd)]];
-    
-    luabridge_push_object(L, func);
-
-    luabridge_push_object(L, self);
-    lua_pushstring(L, sel_getName(_cmd));
-
-#define IMPARGNUMBERTYPE(ch, type, nummethod, valmethod) \
+#define IMPARGNUMBERTYPE(ch, type, nummethod, valmethod, i)   \
 case ch: \
     { \
-        type x = va_arg(vl, type); \
+        void *z = arg ## i; \
+        NSLog(@"IMPARGNUMBERTYPE: %d, %p", i, z); \
+        type x = *((type*)(&z)); \
         luabridge_push_object(L, [NSNumber nummethod:x]); \
     } \
     break
 
-    
-    for (int i = 2; i < num; i ++) {
-        const char *t = [sig getArgumentTypeAtIndex:i];
-        NSLog(@"arg %d: %s", i, t);
-        switch (t[0]) {
-                HANDLENUMBERTYPES(IMPARGNUMBERTYPE);
+#define HANDLE_METHOD_ARGUMENT(i)                                       \
+do {                                                                    \
+        const char *t = [sig getArgumentTypeAtIndex:i + 1];                 \
+        NSLog(@"arg %d: %s", i, t);                                     \
+        switch (t[0]) {                                                 \
+          HANDLENUMBERTYPES(IMPARGNUMBERTYPE, i);                         \
+                                                                        \
+        case '*': /* A character string (char *) */                     \
+            {                                                           \
+                const char *x = (const char *) arg ## i;                \
+                luabridge_push_object(L, [NSString stringWithUTF8String:x]); \
+            }                                                           \
+                break;                                                  \
+                                                                        \
+        case '@': /* An object (whether statically typed or typed id) */ \
+            {                                                           \
+                id x = (__bridge id) arg ## i;                          \
+                luabridge_push_object(L, x);                            \
+            }                                                           \
+                break;                                                  \
+                                                                        \
+        case '^': /* pointer */                                         \
+            {                                                           \
+                void *x = arg ## i;                                     \
+                NSValue *val = [NSValue valueWithPointer:x];            \
+                luabridge_push_object(L, val);                          \
+            }                                                           \
+                break;                                                  \
+                                                                        \
+        case '{': /* {name=type...} A structure */                      \
+        case 'v': /* A void */                                          \
+        case '#': /* A class object (Class) */                          \
+        case ':': /* A method selector (SEL) */                         \
+            default:                                                    \
+                NSLog(@"%s: Not implemented", t);                       \
+                break;                                                  \
+        }                                                               \
+} while (0)
 
-            case '*': // A character string (char *)
-            {
-                const char *x = va_arg(vl, const char *);
-                luabridge_push_object(L, [NSString stringWithUTF8String:x]);
-            }
-                break;
-
-            case '@': // An object (whether statically typed or typed id)
-            {
-                void *ptr = va_arg(vl, void*);
-                NSLog(@"@ pointer: %p", ptr);
-                id x = (__bridge id)ptr;
-                luabridge_push_object(L, x);
-            }
-                break;
-                
-            case '^': // pointer
-            {
-                void *x = va_arg(vl, void *);
-                NSValue *val = [NSValue valueWithPointer:x];
-                luabridge_push_object(L, val);
-            }
-                break;
-                
-            case '{': // {name=type...} A structure
-            case 'v': // A void
-            case '#': // A class object (Class)
-            case ':': // A method selector (SEL)
-            default:
-                NSLog(@"%s: Not implemented", t);
-                break;
-        }
-    }
-    va_end(vl);
-
-    id ret = nil;
-    int err = lua_pcall(L, num, 1, 0);
-    if (err) {
-        const char *mesg = lua_tostring(L, -1);
-        NSLog(@"Lua Error (%d): %s", err, mesg);
-    } else {
-        ret = luavalue_to_object(L, -1);
-    }
-
-    return ret;
-}
-
-#define DEFINE_LUAFUNCIMP(rettype, disptype, luafunc)                   \
-rettype luaFuncIMP_ ## disptype(id self, SEL _cmd, ...)                 \
-{                                                                       \
+#define IMPDEFINITION_FIRSTHALF()                                       \
     NSLog(@"_cmd = %s", sel_getName(_cmd));                             \
                                                                         \
     NSMethodSignature *sig = [self methodSignatureForSelector:_cmd];    \
@@ -454,47 +414,30 @@ rettype luaFuncIMP_ ## disptype(id self, SEL _cmd, ...)                 \
     luabridge_push_object(L, self);                                     \
     lua_pushstring(L, sel_getName(_cmd));                               \
                                                                         \
-    va_list vl;                                                         \
-    va_start(vl, _cmd);                                                 \
-                                                                        \
-    for (int i = 2; i < num; i ++) {                                    \
-        const char *t = [sig getArgumentTypeAtIndex:i];                 \
-        NSLog(@"arg %d: %s", i, t);                                     \
-        switch (t[0]) {                                                 \
-                HANDLENUMBERTYPES(IMPARGNUMBERTYPE);                    \
-                                                                        \
-        case '*': /* A character string (char *) */                     \
-            {                                                           \
-                const char *x = va_arg(vl, const char *);               \
-                luabridge_push_object(L, [NSString stringWithUTF8String:x]); \
-            }                                                           \
-                break;                                                  \
-                                                                        \
-        case '@': /* An object (whether statically typed or typed id) */ \
-            {                                                           \
-                id x = va_arg(vl, id);                                  \
-                luabridge_push_object(L, x);                            \
-            }                                                           \
-                break;                                                  \
-                                                                        \
-        case '^': /* pointer */                                         \
-            {                                                           \
-                void *x = va_arg(vl, void *);                           \
-                NSValue *val = [NSValue valueWithPointer:x];            \
-                luabridge_push_object(L, val);                          \
-            }                                                           \
-                break;                                                  \
-                                                                        \
-        case '{': /* {name=type...} A structure */                      \
-        case 'v': /* A void */                                          \
-        case '#': /* A class object (Class) */                          \
-        case ':': /* A method selector (SEL) */                         \
-            default:                                                    \
-                NSLog(@"%s: Not implemented", t);                       \
-                break;                                                  \
-        }                                                               \
-    }                                                                   \
-    va_end(vl);                                                         \
+    if (num > 2) {HANDLE_METHOD_ARGUMENT(1);}                           \
+    if (num > 3) {HANDLE_METHOD_ARGUMENT(2);}                                          \
+    if (num > 4) {HANDLE_METHOD_ARGUMENT(3);}                                          \
+    if (num > 5) {HANDLE_METHOD_ARGUMENT(4);}
+
+id luaFuncIMP_id(id self, SEL _cmd, void *arg1, void *arg2, void *arg3, void *arg4)
+{
+  IMPDEFINITION_FIRSTHALF()
+    id ret = nil;
+    int err = lua_pcall(L, num, 1, 0);
+    if (err) {
+        const char *mesg = lua_tostring(L, -1);
+        NSLog(@"Lua Error (%d): %s", err, mesg);
+    } else {
+        ret = luavalue_to_object(L, -1);
+    }
+
+    return ret;
+}
+
+#define DEFINE_LUAFUNCIMP(rettype, disptype, luafunc)                   \
+rettype luaFuncIMP_ ## disptype(id self, SEL _cmd, void *arg1, void *arg2, void *arg3, void *arg4) \
+{                                                                       \
+  IMPDEFINITION_FIRSTHALF()                                            \
                                                                         \
     rettype ret = (rettype)0;                                           \
     int err = lua_pcall(L, num, 1, 0);                                  \
