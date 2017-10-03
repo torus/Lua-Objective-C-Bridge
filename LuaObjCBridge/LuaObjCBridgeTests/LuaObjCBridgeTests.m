@@ -378,6 +378,15 @@ long methodImpReturningLong(id self, SEL _cmd) {
     XCTAssertEqual(res, 1234567890);
 }
 
+- (void)testPerformSelector {
+    const char *code =
+    ("local ctx = objc.context:create();"
+     "local sel = objc.getselector('hello:');"
+     "ctx:wrap(objc.class.LuaObjCTest)('new')('performSelectorOnMainThread:withObject:waitUntilDone:', sel, 'selector', 1)"
+     );
+    
+    [self execLuaCode:code];
+}
 
 - (void)testExample {
     // This is an example of a functional test case.

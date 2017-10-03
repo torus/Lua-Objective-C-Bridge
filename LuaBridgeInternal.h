@@ -18,6 +18,7 @@ int luafunc_clear(lua_State *L);
 int luafunc_operate(lua_State *L);
 int luafunc_getclass(lua_State *L);
 int luafunc_getprotocol(lua_State *L);
+int luafunc_getselector(lua_State *L);
 int luafunc_extract(lua_State *L);
 
 

@@ -74,6 +74,7 @@ int finalize_object(lua_State *L)
         ADDMETHOD(operate);
         ADDMETHOD(getclass);
         ADDMETHOD(getprotocol);
+        ADDMETHOD(getselector);
         ADDMETHOD(extract);
 
         lua_setglobal(L, "objc");
@@ -189,7 +190,14 @@ case ch: \
             }
                 break;
             case '@': // An object (whether statically typed or typed id)
-                [inv setArgument:&arg atIndex:i];
+            {
+                if ([arg isKindOfClass:[NSNull class]]) {
+                    id n = nil;
+                    [inv setArgument:&n atIndex:i];
+                } else {
+                    [inv setArgument:&arg atIndex:i];
+                }
+            }
                 break;
 
             case '^': // pointer
@@ -223,7 +231,13 @@ case ch: \
 
             case 'v': // A void
             case '#': // A class object (Class)
+                break;
             case ':': // A method selector (SEL)
+            {
+                SEL sel = (SEL)[(NSValue*)arg pointerValue];
+                [inv setArgument:&sel atIndex:i];
+                break;
+            }
             default:
                 NSLog(@"%s: Not implemented", t);
                 break;
@@ -579,6 +593,15 @@ int luafunc_getprotocol(lua_State *L)
     const char *classname = lua_tostring(L, -1);
     id cls = objc_getProtocol(classname);
     lua_pushlightuserdata(L, (__bridge void *)(cls));
+    return 1;
+}
+
+int luafunc_getselector(lua_State *L)
+{
+    const char *selname = lua_tostring(L, -1);
+    SEL sel = sel_registerName(selname);
+    NSValue *selval = [NSValue valueWithPointer:sel];
+    lua_pushlightuserdata(L, (__bridge void *)(selval));
     return 1;
 }
 
