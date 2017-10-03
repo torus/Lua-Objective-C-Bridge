@@ -366,7 +366,7 @@ case ch: \
 case ch: \
     { \
         void *z = arg ## i; \
-        NSLog(@"IMPARGNUMBERTYPE: %d, %p", i, z); \
+        /*NSLog(@"IMPARGNUMBERTYPE: %d, %p", i, z);*/ \
         type x = *((type*)(&z)); \
         luabridge_push_object(L, [NSNumber nummethod:x]); \
     } \
@@ -375,7 +375,7 @@ case ch: \
 #define HANDLE_METHOD_ARGUMENT(i)                                       \
 do {                                                                    \
         const char *t = [sig getArgumentTypeAtIndex:i + 1];                 \
-        NSLog(@"arg %d: %s", i, t);                                     \
+        /*NSLog(@"arg %d: %s", i, t); */                                    \
         switch (t[0]) {                                                 \
           HANDLENUMBERTYPES(IMPARGNUMBERTYPE, i);                         \
                                                                         \
@@ -412,7 +412,7 @@ do {                                                                    \
 } while (0)
 
 #define IMPDEFINITION_FIRSTHALF()                                       \
-    NSLog(@"_cmd = %s", sel_getName(_cmd));                             \
+    /*NSLog(@"_cmd = %s", sel_getName(_cmd)); */                        \
                                                                         \
     NSMethodSignature *sig = [self methodSignatureForSelector:_cmd];    \
     NSUInteger num = [sig numberOfArguments];                           \
