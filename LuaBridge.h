@@ -36,4 +36,8 @@ extern "C" {
 @property lua_State *L;
 @end
 
+@interface LuaBridgedClass : NSObject
+@property LuaObjectReference *luaObj;
+@end
+
 void luabridge_push_object(lua_State *L, id obj);

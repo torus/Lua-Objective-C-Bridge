@@ -359,6 +359,17 @@ case ch: \
     [stack removeLastObject];
     Class cls = objc_allocateClassPair(superClass, [name UTF8String], 0);
     objc_registerClassPair(cls);
+
+    [stack addObject:cls];
+}
+
+- (void)op_addLuaBridgedClass:(NSMutableArray*)stack
+{
+    NSString *name = [stack lastObject];
+    [stack removeLastObject];
+    Class cls = objc_allocateClassPair([LuaBridgedClass class], [name UTF8String], 0);
+    objc_registerClassPair(cls);
+    
     [stack addObject:cls];
 }
 
@@ -530,6 +541,26 @@ DEFINE_LUAFUNCIMP(const char *, cstr, lua_tostring)
     class_addProtocol(cls, proto);
 }
 
+- (void)op_setLuaTable:(NSMutableArray*)stack
+{
+    LuaObjectReference *luaobj = [stack lastObject];
+    [stack removeLastObject];
+
+    LuaBridgedClass *obj = [stack lastObject];
+    [stack removeLastObject];
+
+    [obj setLuaObj:luaobj];
+}
+
+- (void)op_getLuaTable:(NSMutableArray*)stack
+{
+    LuaBridgedClass *obj = [stack lastObject];
+    [stack removeLastObject];
+
+    id luaobj = [obj luaObj];
+    [[self class] pushValue:&luaobj withTypes:"@" toStack:stack];
+}
+
 - (void)pushObject:(id)obj
 {
     luabridge_push_object(L, obj);
@@ -543,6 +574,10 @@ DEFINE_LUAFUNCIMP(const char *, cstr, lua_tostring)
 {
     luaL_unref(self.L, LUA_REGISTRYINDEX, self.ref);
 }
+@end
+
+@implementation LuaBridgedClass
+@synthesize luaObj;
 @end
 
 void luabridge_push_object(lua_State *L, id obj)

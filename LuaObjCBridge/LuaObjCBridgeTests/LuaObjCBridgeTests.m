@@ -378,6 +378,43 @@ long methodImpReturningLong(id self, SEL _cmd) {
     XCTAssertEqual(res, 1234567890);
 }
 
+- (void)testIvarNative {
+    Class cls = objc_allocateClassPair([NSObject class], "IvarTestClass", 0);
+    BOOL result = class_addIvar(cls, "insvar", sizeof(id), 3, "@");
+    XCTAssertTrue(result);
+    objc_registerClassPair(cls);
+
+    id obj = [cls new];
+    XCTAssertEqual([obj class], cls);
+    
+    Ivar ivar = class_getInstanceVariable(cls, "insvar");
+    XCTAssert(ivar);
+    
+    NSString *str = [NSString stringWithUTF8String:"hogehoge"];
+
+    object_setIvar(obj, ivar, str);
+    id res = object_getIvar(obj, ivar);
+    XCTAssertEqualObjects(res, str);
+}
+
+- (void)testLuaTableOnObject {
+    const char *code =
+    ("local ctx = objc.context:create();"
+     "local st = ctx.stack;"
+     "objc.push(st, 'MyLuaClassIvar');"
+     "objc.operate(st, 'addLuaBridgedClass');"
+     "local obj = ctx:wrap(objc.class.MyLuaClassIvar)('new');"
+     "objc.push(st, -obj);"
+     "objc.push(st, {'hellotable'});"
+     "objc.operate(st, 'setLuaTable');"
+     "objc.push(st, -obj);"
+     "objc.operate(st, 'getLuaTable');"
+     "local tbl = objc.pop(st);"
+     "assert(tbl[1] == 'hellotable')");
+
+    [self execLuaCode:code];
+}
+
 - (void)testPerformSelector {
     const char *code =
     ("local ctx = objc.context:create();"
