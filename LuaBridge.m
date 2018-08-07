@@ -6,7 +6,11 @@
 //  Copyright (c) 2012年 Kronecker's Delta Studio. All rights reserved.
 //
 
+#include <TargetConditionals.h>
+#if TARGET_OS_IOS
 #import <UIKit/UIKit.h>
+#elif TARGET_OS_OSX
+#endif
 
 #import <objc/runtime.h>
 
@@ -75,8 +79,9 @@ int finalize_object(lua_State *L)
         ADDMETHOD(getclass);
         ADDMETHOD(getprotocol);
         ADDMETHOD(getselector);
+#if TARGET_OS_IOS
         ADDMETHOD(extract);
-
+#endif
         lua_setglobal(L, "objc");
 #undef ADDMETHOD
         
@@ -213,6 +218,7 @@ case ch: \
             case '{': // {name=type...} A structure
             {
                 NSString *t_str = [NSString stringWithUTF8String:t];
+#if TARGET_OS_IOS
                 if ([t_str hasPrefix:@"{CGRect"]) {
                     CGRect rect = [(NSValue*)arg CGRectValue];
                     [inv setArgument:&rect atIndex:i];
@@ -226,6 +232,7 @@ case ch: \
                     CGAffineTransform tran = [(NSValue*)arg CGAffineTransformValue];
                     [inv setArgument:&tran atIndex:i];
                 }
+#endif
             }
                 break;
 
@@ -306,7 +313,7 @@ case ch: \
         case '{': // {name=type...} A structure
         {
             NSString *t = [NSString stringWithUTF8String:types];
-            
+#if TARGET_OS_IOS
             if ([t hasPrefix:@"{CGRect"]) {
                 CGRect *rect = (CGRect*)buffer;
                 [stack addObject:[NSValue valueWithCGRect:*rect]];
@@ -320,6 +327,7 @@ case ch: \
                 CGAffineTransform *tran = (CGAffineTransform*)buffer;
                 [stack addObject:[NSValue valueWithCGAffineTransform:*tran]];
             }
+#endif
         }
             break;
             
@@ -340,6 +348,7 @@ case ch: \
     return num;
 }
 
+#if TARGET_OS_IOS
 - (void)op_cgrectmake:(NSMutableArray*)stack
 {
     double x = [[self popNumber:stack] doubleValue];
@@ -350,6 +359,7 @@ case ch: \
     CGRect rect = CGRectMake(x, y, w, h);
     [stack addObject:[NSValue valueWithCGRect:rect]];
 }
+#endif
 
 - (void)op_addClass:(NSMutableArray*)stack
 {
@@ -762,6 +772,7 @@ int luafunc_hoge (lua_State *L)
     return 1;
 }
 
+#if TARGET_OS_IOS
 int luafunc_extract (lua_State *L)
 {
     NSMutableArray *arr = (__bridge NSMutableArray*)lua_topointer(L, 1);
@@ -801,3 +812,4 @@ int luafunc_extract (lua_State *L)
 
     return retnum;
 }
+#endif
