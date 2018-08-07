@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		9C233DA4211A350B009C801F /* LuaObjCTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 9C233DA3211A350A009C801F /* LuaObjCTest.m */; };
+		9C233DA6211A369A009C801F /* utils.lua in Resources */ = {isa = PBXBuildFile; fileRef = 9C233DA5211A369A009C801F /* utils.lua */; };
 		9CA6E659211A141C00062850 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 9CA6E658211A141C00062850 /* AppDelegate.m */; };
 		9CA6E65C211A141C00062850 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9CA6E65B211A141C00062850 /* ViewController.m */; };
 		9CA6E65E211A141D00062850 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9CA6E65D211A141D00062850 /* Assets.xcassets */; };
@@ -136,6 +138,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		9C233DA1211A3324009C801F /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Platforms/MacOSX.platform/Developer/Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
+		9C233DA3211A350A009C801F /* LuaObjCTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LuaObjCTest.m; path = ../../LuaObjCBridge/LuaObjCBridgeTests/LuaObjCTest.m; sourceTree = "<group>"; };
+		9C233DA5211A369A009C801F /* utils.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = utils.lua; path = ../../utils.lua; sourceTree = "<group>"; };
 		9CA6E654211A141C00062850 /* LuaObjCBridgeMac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LuaObjCBridgeMac.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9CA6E657211A141C00062850 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		9CA6E658211A141C00062850 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -266,6 +271,7 @@
 		9CA6E656211A141C00062850 /* LuaObjCBridgeMac */ = {
 			isa = PBXGroup;
 			children = (
+				9C233DA5211A369A009C801F /* utils.lua */,
 				9CA6E68D211A15A200062850 /* Lua */,
 				9CA6E687211A14D800062850 /* LuaBridge.h */,
 				9CA6E688211A14D800062850 /* LuaBridge.m */,
@@ -286,6 +292,7 @@
 		9CA6E66D211A141D00062850 /* LuaObjCBridgeMacTests */ = {
 			isa = PBXGroup;
 			children = (
+				9C233DA3211A350A009C801F /* LuaObjCTest.m */,
 				9CA6E66E211A141D00062850 /* LuaObjCBridgeMacTests.m */,
 				9CA6E670211A141D00062850 /* Info.plist */,
 			);
@@ -369,6 +376,7 @@
 		9CA6E72B211A1A3000062850 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				9C233DA1211A3324009C801F /* XCTest.framework */,
 				9CA6E72E211A1A7D00062850 /* Foundation.framework */,
 				9CA6E72C211A1A3000062850 /* CoreGraphics.framework */,
 			);
@@ -478,6 +486,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9C233DA6211A369A009C801F /* utils.lua in Resources */,
 				9CA6E65E211A141D00062850 /* Assets.xcassets in Resources */,
 				9CA6E661211A141D00062850 /* Main.storyboard in Resources */,
 			);
@@ -580,6 +589,7 @@
 				9CA6E6BF211A15E400062850 /* llex.c in Sources */,
 				9CA6E6B6211A15E400062850 /* lgc.c in Sources */,
 				9CA6E704211A15E400062850 /* lctype.c in Sources */,
+				9C233DA4211A350B009C801F /* LuaObjCTest.m in Sources */,
 				9CA6E6B3211A15E400062850 /* lstrlib.c in Sources */,
 				9CA6E68B211A14D800062850 /* LuaBridge.m in Sources */,
 				9CA6E6F8211A15E400062850 /* lzio.c in Sources */,
