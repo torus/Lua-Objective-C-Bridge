@@ -22,7 +22,8 @@ Requirements
 ------------
 
 -   Lua 5.2.x or Lua 5.3.x
--   iOS 8.0 or later (probably also works on older iOS)
+-   iOS 8.0 or later (probably works on older iOS)
+-   or macOS 10.13 or later (probably works on older macOS)
 
 
 Objective-C API
