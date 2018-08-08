@@ -244,22 +244,28 @@ id methodImp(id self, SEL _cmd) {
     XCTAssertEqual(res, @"aho");
 }
 
-#if TARGET_OS_IOS
 - (void)testAddProtocol {
     const char *code =
     ("local ctx = objc.context:create();"
      "local st = ctx.stack;"
      "local result = nil;"
      "objc.push(st, objc.class.LuaObjCTest);"
+#if TARGET_OS_IOS
      "objc.push(st, objc.getprotocol('UITableViewDelegate'));"
+#elif TARGET_OS_OSX
+     "objc.push(st, objc.getprotocol('NSWindowDelegate'));"
+#endif
      "objc.operate(st, 'addProtocol');");
 
      [self execLuaCode:code];
 
     Class cls = objc_getClass("LuaObjCTest");
+#if TARGET_OS_IOS
     XCTAssertTrue(class_conformsToProtocol(cls, objc_getProtocol("UITableViewDelegate")));
-}
+#elif TARGET_OS_OSX
+    XCTAssertTrue(class_conformsToProtocol(cls, objc_getProtocol("NSWindowDelegate")));
 #endif
+}
 
 - (void)testMethodDefinition {
     const char *code =
