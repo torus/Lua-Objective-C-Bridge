@@ -43,11 +43,7 @@ int finalize_object(lua_State *L)
 {
     void *p = lua_touserdata(L, 1);
     void **ptr = (void**)p;
-    id obj = (__bridge_transfer id)*ptr;
-//    NSLog(@"%s: releasing %@", __PRETTY_FUNCTION__, obj);
-//    CFBridgingRelease(*ptr);
-
-//    NSLog(@"%s: releasing %@ retainCount = %d", __PRETTY_FUNCTION__, obj, [obj retainCount]);
+    CFBridgingRelease(*ptr);
 
     return 0;
 }
