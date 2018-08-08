@@ -75,9 +75,7 @@ int finalize_object(lua_State *L)
         ADDMETHOD(getclass);
         ADDMETHOD(getprotocol);
         ADDMETHOD(getselector);
-#if TARGET_OS_IOS
         ADDMETHOD(extract);
-#endif
         lua_setglobal(L, "objc");
 #undef ADDMETHOD
         
@@ -228,6 +226,17 @@ case ch: \
                     CGAffineTransform tran = [(NSValue*)arg CGAffineTransformValue];
                     [inv setArgument:&tran atIndex:i];
                 }
+#elif TARGET_OS_OSX
+                if ([t_str hasPrefix:@"{CGRect"]) {
+                    CGRect rect = [(NSValue*)arg rectValue];
+                    [inv setArgument:&rect atIndex:i];
+                } else if ([t_str hasPrefix:@"{CGSize"]) {
+                    CGSize size = [(NSValue*)arg sizeValue];
+                    [inv setArgument:&size atIndex:i];
+                } else if ([t_str hasPrefix:@"{CGPoint"]) {
+                    CGPoint point = [(NSValue*)arg pointValue];
+                    [inv setArgument:&point atIndex:i];
+                }
 #endif
             }
                 break;
@@ -322,6 +331,17 @@ case ch: \
             } else if ([t hasPrefix:@"{CGAffineTransform"]) {
                 CGAffineTransform *tran = (CGAffineTransform*)buffer;
                 [stack addObject:[NSValue valueWithCGAffineTransform:*tran]];
+            }
+#elif TARGET_OS_OSX
+            if ([t hasPrefix:@"{CGRect"]) {
+                CGRect *rect = (CGRect*)buffer;
+                [stack addObject:[NSValue valueWithRect:*rect]];
+            } else if ([t hasPrefix:@"{CGSize"]) {
+                CGSize *size = (CGSize*)buffer;
+                [stack addObject:[NSValue valueWithSize:*size]];
+            } else if ([t hasPrefix:@"{CGPoint"]) {
+                CGPoint *size = (CGPoint*)buffer;
+                [stack addObject:[NSValue valueWithPoint:*size]];
             }
 #endif
         }
@@ -768,7 +788,6 @@ int luafunc_hoge (lua_State *L)
     return 1;
 }
 
-#if TARGET_OS_IOS
 int luafunc_extract (lua_State *L)
 {
     NSMutableArray *arr = (__bridge NSMutableArray*)lua_topointer(L, 1);
@@ -777,7 +796,8 @@ int luafunc_extract (lua_State *L)
     [arr removeLastObject];
     
     int retnum = 0;
-        
+
+#if TARGET_OS_IOS
     if ([type compare:@"CGSize"] == NSOrderedSame) {
         CGSize size = [val CGSizeValue];
         lua_pushnumber(L, size.width);
@@ -805,7 +825,25 @@ int luafunc_extract (lua_State *L)
         lua_pushnumber(L, t.ty);
         retnum = 6;
     }
-
+#elif TARGET_OS_OSX
+    if ([type compare:@"CGSize"] == NSOrderedSame) {
+        CGSize size = [val sizeValue];
+        lua_pushnumber(L, size.width);
+        lua_pushnumber(L, size.height);
+        retnum = 2;
+    } else if ([type compare:@"CGPoint"] == NSOrderedSame) {
+        CGPoint p = [val pointValue];
+        lua_pushnumber(L, p.x);
+        lua_pushnumber(L, p.y);
+        retnum = 2;
+    } else if ([type compare:@"CGRect"] == NSOrderedSame) {
+        CGRect r = [val rectValue];
+        lua_pushnumber(L, r.origin.x);
+        lua_pushnumber(L, r.origin.y);
+        lua_pushnumber(L, r.size.width);
+        lua_pushnumber(L, r.size.height);
+        retnum = 4;
+    }
+#endif
     return retnum;
 }
-#endif

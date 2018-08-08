@@ -14,7 +14,6 @@
 		9CA6E65E211A141D00062850 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9CA6E65D211A141D00062850 /* Assets.xcassets */; };
 		9CA6E661211A141D00062850 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9CA6E65F211A141D00062850 /* Main.storyboard */; };
 		9CA6E664211A141D00062850 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 9CA6E663211A141D00062850 /* main.m */; };
-		9CA6E66F211A141D00062850 /* LuaObjCBridgeMacTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 9CA6E66E211A141D00062850 /* LuaObjCBridgeMacTests.m */; };
 		9CA6E67A211A141D00062850 /* LuaObjCBridgeMacUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = 9CA6E679211A141D00062850 /* LuaObjCBridgeMacUITests.m */; };
 		9CA6E68A211A14D800062850 /* LuaBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 9CA6E688211A14D800062850 /* LuaBridge.m */; };
 		9CA6E68B211A14D800062850 /* LuaBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 9CA6E688211A14D800062850 /* LuaBridge.m */; };
@@ -118,6 +117,7 @@
 		9CA6E70F211A15E400062850 /* lstate.c in Sources */ = {isa = PBXBuildFile; fileRef = 9CA6E6AE211A15E400062850 /* lstate.c */; };
 		9CA6E710211A15E400062850 /* lstate.c in Sources */ = {isa = PBXBuildFile; fileRef = 9CA6E6AE211A15E400062850 /* lstate.c */; };
 		9CA6E711211A15E400062850 /* lstate.c in Sources */ = {isa = PBXBuildFile; fileRef = 9CA6E6AE211A15E400062850 /* lstate.c */; };
+		9CC399F0211B6A760005673D /* LuaObjCBridgeTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 9CC399EF211B6A760005673D /* LuaObjCBridgeTests.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -152,7 +152,6 @@
 		9CA6E663211A141D00062850 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		9CA6E665211A141D00062850 /* LuaObjCBridgeMac.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = LuaObjCBridgeMac.entitlements; sourceTree = "<group>"; };
 		9CA6E66A211A141D00062850 /* LuaObjCBridgeMacTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LuaObjCBridgeMacTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		9CA6E66E211A141D00062850 /* LuaObjCBridgeMacTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LuaObjCBridgeMacTests.m; sourceTree = "<group>"; };
 		9CA6E670211A141D00062850 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9CA6E675211A141D00062850 /* LuaObjCBridgeMacUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LuaObjCBridgeMacUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9CA6E679211A141D00062850 /* LuaObjCBridgeMacUITests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LuaObjCBridgeMacUITests.m; sourceTree = "<group>"; };
@@ -220,6 +219,7 @@
 		9CA6E72A211A16E800062850 /* lundump.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = lundump.h; path = "../../../LuaObjCBridge/lua-5.3.4/src/lundump.h"; sourceTree = "<group>"; };
 		9CA6E72C211A1A3000062850 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		9CA6E72E211A1A7D00062850 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		9CC399EF211B6A760005673D /* LuaObjCBridgeTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LuaObjCBridgeTests.m; path = ../../LuaObjCBridge/LuaObjCBridgeTests/LuaObjCBridgeTests.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -292,8 +292,8 @@
 		9CA6E66D211A141D00062850 /* LuaObjCBridgeMacTests */ = {
 			isa = PBXGroup;
 			children = (
+				9CC399EF211B6A760005673D /* LuaObjCBridgeTests.m */,
 				9C233DA3211A350A009C801F /* LuaObjCTest.m */,
-				9CA6E66E211A141D00062850 /* LuaObjCBridgeMacTests.m */,
 				9CA6E670211A141D00062850 /* Info.plist */,
 			);
 			path = LuaObjCBridgeMacTests;
@@ -564,8 +564,8 @@
 				9CA6E6C2211A15E400062850 /* lcode.c in Sources */,
 				9CA6E70D211A15E400062850 /* lobject.c in Sources */,
 				9CA6E70A211A15E400062850 /* lbaselib.c in Sources */,
+				9CC399F0211B6A760005673D /* LuaObjCBridgeTests.m in Sources */,
 				9CA6E6DD211A15E400062850 /* ltablib.c in Sources */,
-				9CA6E66F211A141D00062850 /* LuaObjCBridgeMacTests.m in Sources */,
 				9CA6E6B0211A15E400062850 /* lparser.c in Sources */,
 				9CA6E6C5211A15E400062850 /* lauxlib.c in Sources */,
 				9CA6E6F5211A15E400062850 /* ltm.c in Sources */,

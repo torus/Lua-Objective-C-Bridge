@@ -244,6 +244,7 @@ id methodImp(id self, SEL _cmd) {
     XCTAssertEqual(res, @"aho");
 }
 
+#if TARGET_OS_IOS
 - (void)testAddProtocol {
     const char *code =
     ("local ctx = objc.context:create();"
@@ -258,6 +259,7 @@ id methodImp(id self, SEL _cmd) {
     Class cls = objc_getClass("LuaObjCTest");
     XCTAssertTrue(class_conformsToProtocol(cls, objc_getProtocol("UITableViewDelegate")));
 }
+#endif
 
 - (void)testMethodDefinition {
     const char *code =
