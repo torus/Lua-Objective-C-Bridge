@@ -25,6 +25,21 @@ Requirements
 -   iOS 8.0 or later (probably works on older iOS)
 -   or macOS 10.13 or later (probably works on older macOS)
 
+Usage
+-----
+
+Just add following files to your project:
+
+-   LuaBridge.h
+-   LuaBridge.m
+-   LuaBridgeInternal.h
+-   utils.lua
+-   Lua source code (excluding lua.c and luac.c)
+
+Samples/Tests
+-------------
+
+Please see LuaObjCBridge and LuaObjCBridgeMac projects.
 
 Objective-C API
 ---------------
