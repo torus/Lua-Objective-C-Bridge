@@ -9,8 +9,6 @@
 #ifndef Img2Ch_LuaBridgeInternal_h
 #define Img2Ch_LuaBridgeInternal_h
 
-int luafunc_hoge (lua_State *L);
-
 int luafunc_newstack(lua_State *L);
 int luafunc_push(lua_State *L);
 int luafunc_pop(lua_State *L);

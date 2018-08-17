@@ -66,7 +66,6 @@ int finalize_object(lua_State *L)
      lua_pushcfunction(L, luafunc_ ## name), \
      lua_settable(L, -3))
         
-        ADDMETHOD(hoge);
         ADDMETHOD(newstack);
         ADDMETHOD(push);
         ADDMETHOD(pop);
@@ -753,38 +752,6 @@ int luafunc_clear(lua_State *L)
     [arr removeAllObjects];
 
     return 0;
-}
-
-int luafunc_hoge (lua_State *L)
-{
-    NSString *str = @"Hoge Fuga";
-    SEL sel = sel_getUid("characterAtIndex:");
-    NSMethodSignature *sig = [str methodSignatureForSelector:sel];
-    NSInvocation *inv = [NSInvocation invocationWithMethodSignature:sig];
-    NSUInteger numarg = [sig numberOfArguments];
-    NSLog(@"Number of arguments = %d", numarg);
-    
-    for (int i = 0; i < numarg; i++) {
-        const char *t = [sig getArgumentTypeAtIndex:i];
-        NSLog(@"arg %d: %s", i, t);
-    }
-    
-    [inv setTarget:str];
-    [inv setSelector:sel];
-    NSUInteger arg1 = 5;
-    [inv setArgument:&arg1 atIndex:2];
-    [inv invoke];
-    
-    NSUInteger len = [[inv methodSignature] methodReturnLength];
-    const char *rettype = [sig methodReturnType];
-    NSLog(@"ret type = %s", rettype);
-    void *buffer = malloc(len);
-    [inv getReturnValue:buffer];
-    NSLog(@"ret = %c", *(unichar*)buffer);
-    
-    lua_pushinteger(L, *(unichar*)buffer);
-
-    return 1;
 }
 
 int luafunc_extract (lua_State *L)

@@ -28,7 +28,6 @@ extern "C" {
 - (void)dostring:(NSString*)stmt;
 - (void)operate:(NSString*)opname onStack:(NSMutableArray*)stack;
 - (void)op_call:(NSMutableArray*)stack;
-- (void)op_cgrectmake:(NSMutableArray*)stack;
 @end
 
 @interface LuaObjectReference : NSObject
