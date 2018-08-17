@@ -94,8 +94,7 @@ int finalize_object(lua_State *L)
 {
     static LuaBridge *stat = nil;
     if (!stat) {
-        stat = [LuaBridge alloc];
-        [stat init];
+        stat = [[LuaBridge alloc] init];
         
         lua_State *L = stat.L;
         
