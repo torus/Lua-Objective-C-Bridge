@@ -452,7 +452,7 @@ do {                                                                    \
     /*NSLog(@"_cmd = %s", sel_getName(_cmd)); */                        \
                                                                         \
     NSMethodSignature *sig = [self methodSignatureForSelector:_cmd];    \
-    NSUInteger num = [sig numberOfArguments];                           \
+    int num = (int)[sig numberOfArguments];                             \
                                                                         \
     lua_State *L = [[LuaBridge instance] L];                            \
                                                                         \
